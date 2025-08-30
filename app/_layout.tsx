@@ -1,29 +1,43 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import { AuthProvider, useAuth } from "@/context/UserContext";
+import { Stack } from "expo-router";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import {
+  MD3LightTheme as DefaultTheme,
+  PaperProvider,
+} from "react-native-paper";
+import Home from "./Home/Home";
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+function MainStack() {
+  const { isLoggedIn } = useAuth();
+  if (!isLoggedIn) {
+    return <Home />;
+  }
+  return (
+    <Stack>
+      <Stack.Screen name="index" options={{ title: "Home" }} />
+      {/* Add other screens here */}
+    </Stack>
+  );
+}
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    return null;
-  }
-
+  const theme = {
+    ...DefaultTheme,
+    // Specify custom property
+    myOwnProperty: true,
+    // Specify custom property in nested object
+    colors: {
+      ...DefaultTheme.colors,
+      myOwnColor: "#BADA55",
+    },
+  };
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <PaperProvider theme={theme}>
+        <AuthProvider>
+          <MainStack />
+        </AuthProvider>
+      </PaperProvider>
+    </GestureHandlerRootView>
   );
 }
