@@ -3,20 +3,22 @@ import React, { useState } from "react";
 import { StyleSheet } from "react-native";
 
 import { PanGestureHandler } from "react-native-gesture-handler";
-import Animated, {
-  Extrapolate,
-  interpolate,
-  interpolateColor,
-  runOnJS,
-  useAnimatedGestureHandler,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from "react-native-reanimated";
-// ...existing code...
+import Animated,
+  {
+    Extrapolate,
+    interpolate,
+    interpolateColor,
+    runOnJS,
+    useAnimatedGestureHandler,
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
+  } from "react-native-reanimated";
 
-const BUTTON_WIDTH = 350;
-const BUTTON_HEIGHT = 50;
+import { BhaktiColors } from "@/constants/Colors";
+
+const BUTTON_WIDTH = 360;
+const BUTTON_HEIGHT = 80;
 const BUTTON_PADDING = 10;
 const SWIPEABLE_DIMENSIONS = BUTTON_HEIGHT - 2 * BUTTON_PADDING;
 
@@ -27,9 +29,14 @@ const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 interface SwipeButtonProps {
   onToggle: (isToggled: boolean) => void;
   label: string;
+  config: Record<string, any>;
 }
 
-const SwipeButton: React.FC<SwipeButtonProps> = ({ onToggle, label }) => {
+const SwipeButton: React.FC<SwipeButtonProps> = ({
+  onToggle,
+  label,
+  config,
+}) => {
   // Animated value for X translation
   const X = useSharedValue(0);
   // Toggled State
@@ -37,10 +44,10 @@ const SwipeButton: React.FC<SwipeButtonProps> = ({ onToggle, label }) => {
 
   // Fires when animation ends
   const handleComplete = (isToggled: any) => {
-    // Reset everything to initial state
+    // Update toggled state and notify parent with actual state
     X.value = 0;
-    setToggled(false);
-    onToggle(false);
+    setToggled(isToggled);
+    onToggle(isToggled);
   };
 
   // Gesture Handler Events
@@ -88,7 +95,7 @@ const SwipeButton: React.FC<SwipeButtonProps> = ({ onToggle, label }) => {
         backgroundColor: interpolateColor(
           X.value,
           [0, BUTTON_WIDTH - SWIPEABLE_DIMENSIONS - BUTTON_PADDING],
-          ["#06d6a0", "#fff"]
+          [BhaktiColors.button, BhaktiColors.background] // button to background
         ),
         transform: [{ translateX: X.value }],
       };
@@ -119,7 +126,7 @@ const SwipeButton: React.FC<SwipeButtonProps> = ({ onToggle, label }) => {
     <Animated.View style={[styles.swipeCont, AnimatedStyles.swipeCont]}>
       <AnimatedLinearGradient
         style={[AnimatedStyles.colorWave, styles.colorWave]}
-        colors={["#06d6a0", "#1b9aaa"]}
+        colors={[BhaktiColors.button, BhaktiColors.background]} // button to background
         start={{ x: 0.0, y: 0.5 }}
         end={{ x: 1, y: 0.5 }}
       />
@@ -137,13 +144,15 @@ const styles = StyleSheet.create({
   swipeCont: {
     height: BUTTON_HEIGHT,
     width: BUTTON_WIDTH,
-    backgroundColor: "#fff",
+    backgroundColor: BhaktiColors.card, // card background
     borderRadius: BUTTON_HEIGHT,
     padding: BUTTON_PADDING,
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     flexDirection: "row",
+    borderWidth: 2,
+    borderColor: BhaktiColors.cardBorder, // card border
   },
   colorWave: {
     position: "absolute",
@@ -164,7 +173,8 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     zIndex: 2,
-    color: "#1b9aaa",
+    color: BhaktiColors.text, // text color
+    letterSpacing: 1,
   },
 });
 

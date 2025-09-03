@@ -3,24 +3,205 @@
  * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
  */
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+export const colorCombinations = [
+  // 🌊 Ocean Breeze
+  {
+    name: "Ocean Breeze",
+    emoji: "🌊",
+    background: "#f0f9ff",
+    button: "#0ea5e9",
+    buttonText: "#ffffff",
+    card: "#ffffff",
+    cardBorder: "#0ea5e9",
+    text: "#0f172a",
+    accent: "#0284c7",
+    error: "#dc2626",
+  },
+  // 🌅 Sunset Glow
+  {
+    name: "Sunset Glow",
+    emoji: "🌅",
+    background: "#fef3c7",
+    button: "#f59e0b",
+    buttonText: "#ffffff",
+    card: "#ffffff",
+    cardBorder: "#f59e0b",
+    text: "#92400e",
+    accent: "#ea580c",
+    error: "#dc2626",
+  },
+  // 🌸 Cherry Blossom
+  {
+    name: "Cherry Blossom",
+    emoji: "🌸",
+    background: "#fdf2f8",
+    button: "#ec4899",
+    buttonText: "#ffffff",
+    card: "#ffffff",
+    cardBorder: "#ec4899",
+    text: "#831843",
+    accent: "#be185d",
+    error: "#dc2626",
+  },
+  // 🌲 Forest Deep
+  {
+    name: "Forest Deep",
+    emoji: "🌲",
+    background: "#f0fdf4",
+    button: "#16a34a",
+    buttonText: "#ffffff",
+    card: "#ffffff",
+    cardBorder: "#16a34a",
+    text: "#14532d",
+    accent: "#166534",
+    error: "#dc2626",
+  },
+  // 🌙 Midnight Purple
+  {
+    name: "Midnight Purple",
+    emoji: "🌙",
+    background: "#faf5ff",
+    button: "#9333ea",
+    buttonText: "#ffffff",
+    card: "#ffffff",
+    cardBorder: "#9333ea",
+    text: "#581c87",
+    accent: "#7c3aed",
+    error: "#dc2626",
+  },
+  // ☀️ Golden Hour
+  {
+    name: "Golden Hour",
+    emoji: "☀️",
+    background: "#fffbeb",
+    button: "#d97706",
+    buttonText: "#ffffff",
+    card: "#ffffff",
+    cardBorder: "#d97706",
+    text: "#92400e",
+    accent: "#ea580c",
+    error: "#dc2626",
+  },
+  // 🌊 Deep Ocean
+  {
+    name: "Deep Ocean",
+    emoji: "🌊",
+    background: "#f8fafc",
+    button: "#0f766e",
+    buttonText: "#ffffff",
+    card: "#ffffff",
+    cardBorder: "#0f766e",
+    text: "#134e4a",
+    accent: "#0d9488",
+    error: "#dc2626",
+  },
+  // 🍇 Royal Grape
+  {
+    name: "Royal Grape",
+    emoji: "🍇",
+    background: "#fefefe",
+    button: "#7c2d92",
+    buttonText: "#ffffff",
+    card: "#ffffff",
+    cardBorder: "#7c2d92",
+    text: "#581c87",
+    accent: "#a21caf",
+    error: "#dc2626",
+  },
+  // 🧡 Warm Ember (RECOMMENDED)
+  {
+    name: "Warm Ember",
+    emoji: "🧡",
+    background: "#fff7ed",
+    button: "#ea580c",
+    buttonText: "#ffffff",
+    card: "#ffffff",
+    cardBorder: "#ea580c",
+    text: "#9a3412",
+    accent: "#f97316",
+    error: "#dc2626",
+    recommended: true,
+  },
+  // 💎 Cool Steel
+  {
+    name: "Cool Steel",
+    emoji: "💎",
+    background: "#f8fafc",
+    button: "#475569",
+    buttonText: "#ffffff",
+    card: "#ffffff",
+    cardBorder: "#475569",
+    text: "#334155",
+    accent: "#64748b",
+    error: "#dc2626",
+  },
+  // 🌺 Tropical Sunset
+  {
+    name: "Tropical Sunset",
+    emoji: "🌺",
+    background: "#fef7ff",
+    button: "#f97316",
+    buttonText: "#ffffff",
+    card: "#ffffff",
+    cardBorder: "#f97316",
+    text: "#7c2d12",
+    accent: "#ec4899",
+    error: "#dc2626",
+  },
+  // 🎋 Sage Garden
+  {
+    name: "Sage Garden",
+    emoji: "🎋",
+    background: "#f6f7f6",
+    button: "#84cc16",
+    buttonText: "#ffffff",
+    card: "#ffffff",
+    cardBorder: "#84cc16",
+    text: "#365314",
+    accent: "#65a30d",
+    error: "#dc2626",
+  },
+  // 🌌 Cosmic Blue
+  {
+    name: "Cosmic Blue",
+    emoji: "🌌",
+    background: "#f0f9ff",
+    button: "#2563eb",
+    buttonText: "#ffffff",
+    card: "#ffffff",
+    cardBorder: "#2563eb",
+    text: "#1e3a8a",
+    accent: "#3b82f6",
+    error: "#dc2626",
+  },
+  // 🍑 Sweet Cherry
+  {
+    name: "Sweet Cherry",
+    emoji: "🍑",
+    background: "#fef2f2",
+    button: "#ef4444",
+    buttonText: "#ffffff",
+    card: "#ffffff",
+    cardBorder: "#ef4444",
+    text: "#7f1d1d",
+    accent: "#dc2626",
+    error: "#dc2626",
+  },
+  // 🌿 Fresh Mint
+  {
+    name: "Fresh Mint",
+    emoji: "🌿",
+    background: "#f0fdf4",
+    button: "#10b981",
+    buttonText: "#ffffff",
+    card: "#ffffff",
+    cardBorder: "#10b981",
+    text: "#064e3b",
+    accent: "#059669",
+    error: "#dc2626",
+  },
+];
 
-export const Colors = {
-  light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
-  },
-  dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
-  },
-};
+// CHANGED: Using the Sacred Fire theme (index 8) instead of the problematic teal combination
+// This provides much better contrast and a vibrant, spiritual feel with saffron colors
+export const BhaktiColors = colorCombinations[8]; // 🧡 Warm Ember - Sacred Fire theme

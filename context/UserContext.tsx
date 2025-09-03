@@ -12,12 +12,15 @@ type AuthContextType = {
   login: (userData: User) => void;
   logout: () => void;
   isLoggedIn: boolean;
+  selectedThemeIndex: number;
+  setThemeIndex: (index: number) => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [selectedThemeIndex, setThemeIndex] = useState(8); // default to Sacred Fire theme
 
   const login = (userData: User) => {
     setUser(userData);
@@ -28,7 +31,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoggedIn: !!user }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        logout,
+        isLoggedIn: !!user,
+        selectedThemeIndex,
+        setThemeIndex,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

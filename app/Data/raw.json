@@ -1,0 +1,546 @@
+{
+  "data": [
+    {
+      "id": 1,
+      "title": "Tuljapur Ambha Bhavani Puja",
+      "lastDate": "22-10-2025",
+      "description": {
+        "point1": "Tuljapur Ambha Bhavani Puja is performed to seek the divine energy of Goddess Bhavani, known for courage and protection. This ritual invokes her blessings for inner strength, clarity of mind, and relief from life's struggles. A trusted pandit conducts the puja with devotion, and a personalized video of the ritual is shared with you for spiritual connection.",
+        "point2": "This special service offers spiritual upliftment through Vedic chanting, where your personal details are respectfully offered during the puja. The blessings promote prosperity, health, and stability in life. You'll receive a recorded video as proof of the performed ritual, making it ideal for those unable to attend in person but wishing to stay connected to the divine."
+      },
+      "temple": {
+        "name": "Tuljapur Ambha Bhavani Temple",
+        "location": "Tuljapur, Maharashtra",
+        "image": "",
+        "price": {
+          "oneDevotee": 501,
+          "twoDevotees": 801,
+          "fourDevotees": 1001,
+          "extraCharges": 50
+        },
+        "prasadDelivery": {
+          "included": true,
+          "deliveryTime": "7-10 days"
+        },
+        "benifits": {},
+        "pandit": {
+          "name": "Experienced Pandit",
+          "about": "He has over 25 years of experience in performing pujas and is deeply devoted to Ambha Bhavani."
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Kashi Vishwanath Rudrabhishek",
+      "description": {
+        "point1": "The Rudrabhishek at Kashi Vishwanath is one of the most sacred rituals dedicated to Lord Shiva. It is performed with holy water, milk, honey, and ghee while chanting Vedic mantras. This puja removes negative energies and brings peace, prosperity, and health.",
+        "point2": "By performing this puja, devotees receive blessings of Mahadev for liberation and inner peace. A video of the puja is shared so devotees can witness the rituals even if they are away from Varanasi."
+      },
+      "temple": {
+        "name": "Kashi Vishwanath Temple",
+        "location": "Varanasi, Uttar Pradesh",
+        "image": "",
+        "price": {
+          "oneDevotee": 751,
+          "twoDevotees": 1201,
+          "fourDevotees": 1601,
+          "extraCharges": 100
+        },
+        "prasadDelivery": {
+          "included": true,
+          "deliveryTime": "5-7 days"
+        },
+        "pandit": {
+          "name": "Pandit Shashwat Mishra",
+          "about": "Renowned for his deep Vedic knowledge and experience of 30+ years in Shiva rituals."
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Tirupati Balaji Suprabhatam Seva",
+      "description": {
+        "point1": "Suprabhatam Seva is performed at Tirumala in the early morning to awaken Lord Venkateswara. It involves chanting hymns that glorify the Lord and seek his blessings for wealth, prosperity, and happiness.",
+        "point2": "This seva is considered highly auspicious and brings spiritual bliss. The recorded video ensures that devotees feel connected to the sacred ritual from their homes."
+      },
+      "temple": {
+        "name": "Sri Venkateswara Temple",
+        "location": "Tirumala, Andhra Pradesh",
+        "image": "",
+        "price": {
+          "oneDevotee": 1001,
+          "twoDevotees": 1501,
+          "fourDevotees": 2001,
+          "extraCharges": 150
+        },
+        "prasadDelivery": {
+          "included": true,
+          "deliveryTime": "7-12 days"
+        },
+        "pandit": {
+          "name": "Pandit Venkata Subramanian",
+          "about": "Serving Lord Balaji's devotees for over 20 years with sincerity and devotion."
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Shirdi Sai Baba Arati Puja",
+      "description": {
+        "point1": "Sai Baba Arati is performed with lamps, flowers, and devotional bhajans at the holy shrine of Shirdi. The ritual invokes Baba's blessings for peace of mind and protection from hardships.",
+        "point2": "The Arati creates a powerful spiritual environment, and devotees receive prasad with Baba's grace. A video of the ritual is shared for your devotion."
+      },
+      "temple": {
+        "name": "Shirdi Sai Baba Temple",
+        "location": "Shirdi, Maharashtra",
+        "image": "",
+        "price": {
+          "oneDevotee": 551,
+          "twoDevotees": 901,
+          "fourDevotees": 1301,
+          "extraCharges": 70
+        },
+        "prasadDelivery": {
+          "included": true,
+          "deliveryTime": "6-9 days"
+        },
+        "pandit": {
+          "name": "Sai Sevak Pandit",
+          "about": "A dedicated priest at Shirdi, performing daily arati and pujas for devotees worldwide."
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Vaishno Devi Chandi Path",
+      "description": {
+        "point1": "The Chandi Path at Vaishno Devi is a powerful recitation dedicated to Goddess Durga in her fierce form. It grants strength, courage, and victory over obstacles.",
+        "point2": "This puja is highly beneficial during Navratri and personal challenges. A recorded video will be shared with devotees for blessings."
+      },
+      "temple": {
+        "name": "Vaishno Devi Bhawan",
+        "location": "Katra, Jammu & Kashmir",
+        "image": "",
+        "price": {
+          "oneDevotee": 801,
+          "twoDevotees": 1201,
+          "fourDevotees": 1601,
+          "extraCharges": 100
+        },
+        "prasadDelivery": {
+          "included": true,
+          "deliveryTime": "8-12 days"
+        },
+        "pandit": {
+          "name": "Pandit Kailash Nath",
+          "about": "Expert in Durga Saptashati and Chandi Path for over 22 years."
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Somnath Mahadev Rudrabhishek",
+      "description": {
+        "point1": "Rudrabhishek at Somnath Jyotirlinga is a divine offering to Lord Shiva with milk, honey, and Vedic mantras. It removes sins and brings spiritual purity.",
+        "point2": "The blessings bring peace, success, and prosperity. A recorded video of the ritual keeps you connected to Somnath Mahadev."
+      },
+      "temple": {
+        "name": "Somnath Jyotirlinga Temple",
+        "location": "Prabhas Patan, Gujarat",
+        "image": "",
+        "price": {
+          "oneDevotee": 701,
+          "twoDevotees": 1201,
+          "fourDevotees": 1801,
+          "extraCharges": 80
+        },
+        "prasadDelivery": {
+          "included": true,
+          "deliveryTime": "5-8 days"
+        },
+        "pandit": {
+          "name": "Pandit Harshad Joshi",
+          "about": "Well-known for conducting Shiva Abhisheks with devotion for the last 28 years."
+        }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Jagannath Puri Maha Bhog Puja",
+      "description": {
+        "point1": "The Maha Bhog offering at Jagannath Puri includes 56 varieties of prasad (Chappan Bhog) offered to Lord Jagannath. It symbolizes devotion and surrender.",
+        "point2": "Devotees receive blessings of abundance and fulfillment. The sacred bhog prasad is delivered to devotees' homes."
+      },
+      "temple": {
+        "name": "Jagannath Temple",
+        "location": "Puri, Odisha",
+        "image": "",
+        "price": {
+          "oneDevotee": 1001,
+          "twoDevotees": 1501,
+          "fourDevotees": 2001,
+          "extraCharges": 120
+        },
+        "prasadDelivery": {
+          "included": true,
+          "deliveryTime": "10-14 days"
+        },
+        "pandit": {
+          "name": "Pandit Rath Family Sevak",
+          "about": "Hereditary sevayats of Lord Jagannath for over 50 years."
+        }
+      }
+    },
+    {
+      "id": 9,
+      "title": "Kamakhya Devi Tantrik Puja",
+      "description": {
+        "point1": "Kamakhya Devi Tantrik Puja is one of the most powerful rituals for spiritual energy, removal of negativity, and fulfillment of desires.",
+        "point2": "Performed by expert tantric pandits, this puja grants divine protection. Devotees receive video proof of the puja."
+      },
+      "temple": {
+        "name": "Kamakhya Temple",
+        "location": "Guwahati, Assam",
+        "image": "",
+        "price": {
+          "oneDevotee": 1501,
+          "twoDevotees": 2501,
+          "fourDevotees": 3501,
+          "extraCharges": 150
+        },
+        "prasadDelivery": {
+          "included": true,
+          "deliveryTime": "12-15 days"
+        },
+        "pandit": {
+          "name": "Tantra Acharya Pandit Mohan Nath",
+          "about": "Specialized in Kamakhya rituals and Devi sadhanas for 35 years."
+        }
+      }
+    },
+    {
+      "id": 10,
+      "title": "Meenakshi Amman Kalyanotsavam",
+      "description": {
+        "point1": "Kalyanotsavam at Meenakshi Temple celebrates the divine marriage of Goddess Meenakshi and Lord Sundareswarar. It blesses devotees with harmony in relationships.",
+        "point2": "Couples seeking marital bliss benefit greatly. A recorded video is shared for blessings."
+      },
+      "temple": {
+        "name": "Meenakshi Amman Temple",
+        "location": "Madurai, Tamil Nadu",
+        "image": "",
+        "price": {
+          "oneDevotee": 901,
+          "twoDevotees": 1401,
+          "fourDevotees": 1801,
+          "extraCharges": 90
+        },
+        "prasadDelivery": {
+          "included": true,
+          "deliveryTime": "7-10 days"
+        },
+        "pandit": {
+          "name": "Pandit Seshadri Iyer",
+          "about": "Performing traditional South Indian temple pujas for 27 years."
+        }
+      }
+    },
+    {
+      "id": 11,
+      "title": "Dakshineswar Kali Homa",
+      "description": {
+        "point1": "The Homa dedicated to Maa Kali at Dakshineswar invokes her fierce energy to remove negativity, fear, and obstacles in life.",
+        "point2": "Devotees attain courage and divine protection. A video recording is shared post completion."
+      },
+      "temple": {
+        "name": "Dakshineswar Kali Temple",
+        "location": "Kolkata, West Bengal",
+        "image": "",
+        "price": {
+          "oneDevotee": 801,
+          "twoDevotees": 1201,
+          "fourDevotees": 1601,
+          "extraCharges": 100
+        },
+        "prasadDelivery": {
+          "included": true,
+          "deliveryTime": "6-9 days"
+        },
+        "pandit": {
+          "name": "Pandit Ananta Mukherjee",
+          "about": "Expert in Kali pujas with 30 years of spiritual service."
+        }
+      }
+    },
+    {
+      "id": 12,
+      "title": "Rameswaram Pitru Tarpan Puja",
+      "description": {
+        "point1": "Pitru Tarpan at Rameswaram is performed to honor ancestors and bring peace to their souls. It grants blessings of harmony and removes ancestral doshas.",
+        "point2": "The ritual provides relief from karmic burdens. A video proof of the puja is shared."
+      },
+      "temple": {
+        "name": "Ramanathaswamy Temple",
+        "location": "Rameswaram, Tamil Nadu",
+        "image": "",
+        "price": {
+          "oneDevotee": 1101,
+          "twoDevotees": 1501,
+          "fourDevotees": 2201,
+          "extraCharges": 120
+        },
+        "prasadDelivery": {
+          "included": true,
+          "deliveryTime": "7-11 days"
+        },
+        "pandit": {
+          "name": "Pandit Raghavendra Swamy",
+          "about": "Over 32 years of experience in Pitru rituals and Shraddha ceremonies."
+        }
+      }
+    },
+    {
+      "id": 13,
+      "title": "Ujjain Mahakaleshwar Bhasma Aarti",
+      "description": {
+        "point1": "The famous Bhasma Aarti at Mahakaleshwar is performed early morning with sacred ash, offering deep devotion to Lord Shiva. It is believed to liberate devotees from cycles of rebirth.",
+        "point2": "Witnessing or sponsoring this aarti ensures blessings of health, wealth, and salvation. Video recording is shared with devotees."
+      },
+      "temple": {
+        "name": "Mahakaleshwar Temple",
+        "location": "Ujjain, Madhya Pradesh",
+        "image": "",
+        "price": {
+          "oneDevotee": 1501,
+          "twoDevotees": 2201,
+          "fourDevotees": 3001,
+          "extraCharges": 100
+        },
+        "prasadDelivery": {
+          "included": true,
+          "deliveryTime": "5-8 days"
+        },
+        "pandit": {
+          "name": "Pandit Mahesh Sharma",
+          "about": "Famous priest of Mahakal, serving devotees for over 40 years."
+        }
+      }
+    },
+    {
+      "id": 14,
+      "title": "Amarnath Shivling Darshan Puja",
+      "description": {
+        "point1": "Amarnath Shivling Puja is dedicated to the naturally formed ice Shiva Lingam. It is one of the holiest shrines, symbolizing eternity and purity.",
+        "point2": "Devotees receive blessings for spiritual upliftment and inner peace. A video recording ensures remote darshan."
+      },
+      "temple": {
+        "name": "Amarnath Cave Temple",
+        "location": "Jammu & Kashmir",
+        "image": "",
+        "price": {
+          "oneDevotee": 2001,
+          "twoDevotees": 2801,
+          "fourDevotees": 3501,
+          "extraCharges": 200
+        },
+        "prasadDelivery": {
+          "included": true,
+          "deliveryTime": "12-15 days"
+        },
+        "pandit": {
+          "name": "Pandit Kailash Nath",
+          "about": "Experienced in guiding Amarnath Yatras for over 25 years."
+        }
+      }
+    },
+    {
+      "id": 16,
+      "title": "Dwarkadhish Krishna Abhishek",
+      "description": {
+        "point1": "Abhishek of Lord Krishna at Dwarkadhish Temple involves bathing the idol with milk, ghee, and honey. It brings blessings of love, devotion, and prosperity.",
+        "point2": "This ritual connects devotees with Shri Krishna's divine energy. A video recording of the puja is provided."
+      },
+      "temple": {
+        "name": "Dwarkadhish Temple",
+        "location": "Dwarka, Gujarat",
+        "image": "",
+        "price": {
+          "oneDevotee": 751,
+          "twoDevotees": 1201,
+          "fourDevotees": 1801,
+          "extraCharges": 90
+        },
+        "prasadDelivery": {
+          "included": true,
+          "deliveryTime": "5-7 days"
+        },
+        "pandit": {
+          "name": "Pandit Ramesh Chaturvedi",
+          "about": "Dedicated priest at Dwarkadhish with 29 years of service."
+        }
+      }
+    },
+    {
+      "id": 17,
+      "title": "Siddhivinayak Ganapati Havan",
+      "description": {
+        "point1": "The Havan at Siddhivinayak Temple invokes Lord Ganesha's blessings for removing obstacles, success in endeavors, and prosperity.",
+        "point2": "Ideal before new beginnings, the puja strengthens spiritual connection. A video recording will be shared."
+      },
+      "temple": {
+        "name": "Siddhivinayak Temple",
+        "location": "Mumbai, Maharashtra",
+        "image": "",
+        "price": {
+          "oneDevotee": 1001,
+          "twoDevotees": 1501,
+          "fourDevotees": 2001,
+          "extraCharges": 100
+        },
+        "prasadDelivery": {
+          "included": true,
+          "deliveryTime": "6-9 days"
+        },
+        "pandit": {
+          "name": "Pandit Vinay Sharma",
+          "about": "Serving at Siddhivinayak Temple for 20 years."
+        }
+      }
+    },
+    {
+      "id": 18,
+      "title": "Kalighat Kali Tantra Puja",
+      "description": {
+        "point1": "Kalighat Kali Tantra Puja is performed for removal of black magic, evil eye, and to gain courage. The puja invokes the fierce energy of Maa Kali.",
+        "point2": "It grants strength, protection, and prosperity. A video recording is shared with devotees."
+      },
+      "temple": {
+        "name": "Kalighat Kali Temple",
+        "location": "Kolkata, West Bengal",
+        "image": "",
+        "price": {
+          "oneDevotee": 901,
+          "twoDevotees": 1401,
+          "fourDevotees": 2001,
+          "extraCharges": 120
+        },
+        "prasadDelivery": {
+          "included": true,
+          "deliveryTime": "7-10 days"
+        },
+        "pandit": {
+          "name": "Pandit Subrata Banerjee",
+          "about": "Practitioner of Tantra and Kali rituals for 35 years."
+        }
+      }
+    },
+    {
+      "id": 19,
+      "title": "Kedarnath Maha Rudrabhishek",
+      "description": {
+        "point1": "The Maha Rudrabhishek at Kedarnath Jyotirlinga is a sacred offering to Lord Shiva. It destroys sins and grants moksha.",
+        "point2": "Performed with Vedic chants, it ensures divine blessings. A video proof is shared with devotees."
+      },
+      "temple": {
+        "name": "Kedarnath Temple",
+        "location": "Uttarakhand",
+        "image": "",
+        "price": {
+          "oneDevotee": 2001,
+          "twoDevotees": 2801,
+          "fourDevotees": 3501,
+          "extraCharges": 150
+        },
+        "prasadDelivery": {
+          "included": true,
+          "deliveryTime": "10-14 days"
+        },
+        "pandit": {
+          "name": "Pandit Bhuwan Chandra",
+          "about": "Shiva bhakt with 30+ years of service at Kedarnath."
+        }
+      }
+    },
+    {
+      "id": 20,
+      "title": "Badrinath Vishnu Sahasranama Path",
+      "description": {
+        "point1": "Vishnu Sahasranama chanting at Badrinath is performed to invoke Lord Vishnu's blessings for health, peace, and prosperity.",
+        "point2": "Devotees gain spiritual upliftment and divine grace. A video recording is shared."
+      },
+      "temple": {
+        "name": "Badrinath Temple",
+        "location": "Uttarakhand",
+        "image": "",
+        "price": {
+          "oneDevotee": 1201,
+          "twoDevotees": 1801,
+          "fourDevotees": 2401,
+          "extraCharges": 120
+        },
+        "prasadDelivery": {
+          "included": true,
+          "deliveryTime": "9-12 days"
+        },
+        "pandit": {
+          "name": "Pandit Narayan Bhatt",
+          "about": "Specialized in Vishnu pujas for 25 years at Badrinath."
+        }
+      }
+    },
+    {
+      "id": 21,
+      "title": "Akshardham Maha Aarti",
+      "description": {
+        "point1": "Maha Aarti at Akshardham Temple is performed with grandeur, devotion, and bhajans to honor Lord Swaminarayan.",
+        "point2": "Devotees experience spiritual bliss and divine grace. A video of the ritual is shared."
+      },
+      "temple": {
+        "name": "Akshardham Temple",
+        "location": "Delhi",
+        "image": "",
+        "price": {
+          "oneDevotee": 601,
+          "twoDevotees": 1001,
+          "fourDevotees": 1501,
+          "extraCharges": 80
+        },
+        "prasadDelivery": {
+          "included": true,
+          "deliveryTime": "5-8 days"
+        },
+        "pandit": {
+          "name": "Swaminarayan Sevak",
+          "about": "Dedicated devotee priest performing rituals at Akshardham."
+        }
+      }
+    },
+    {
+      "id": 22,
+      "title": "Golden Temple Sukhmani Sahib Path",
+      "description": {
+        "point1": "Sukhmani Sahib Path at the Golden Temple is a spiritual recitation bringing peace of mind, prosperity, and harmony.",
+        "point2": "Performed with devotion, the path removes stress and negativity. A video recording is shared."
+      },
+      "temple": {
+        "name": "Harmandir Sahib (Golden Temple)",
+        "location": "Amritsar, Punjab",
+        "image": "",
+        "price": {
+          "oneDevotee": 901,
+          "twoDevotees": 1501,
+          "fourDevotees": 2001,
+          "extraCharges": 100
+        },
+        "prasadDelivery": {
+          "included": true,
+          "deliveryTime": "7-10 days"
+        },
+        "pandit": {
+          "name": "Granthi Sahib Ji",
+          "about": "Experienced Granthi performing Sukhmani Sahib Path with devotion."
+        }
+      }
+    }
+  ]
+}

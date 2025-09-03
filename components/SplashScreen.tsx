@@ -1,3 +1,4 @@
+import { isWeb } from "@/utils/Device";
 import React, { useEffect, useRef } from "react";
 import { Animated, Image, Platform, StyleSheet, View } from "react-native";
 // import { Text } from "react-native-paper";
@@ -26,7 +27,11 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
   return (
     <View style={styles.container}>
       <Image
-        source={require("../assets/images/Initial/1.jpg")}
+        source={
+          isWeb()
+            ? require("../assets/images/alan.jpg")
+            : require("../assets/images/Initial/1.jpg")
+        }
         style={StyleSheet.absoluteFill}
         resizeMode="cover"
       />
