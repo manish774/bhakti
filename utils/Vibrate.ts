@@ -219,11 +219,3 @@ export class VibrationManager {
     }
   }
 }
-
-// Usage examples:
-// VibrationManager.success();
-// VibrationManager.error();
-// VibrationManager.lightImpact();
-// VibrationManager.heartbeat();
-// VibrationManager.customPattern([100, 50, 100, 50, 200]);
-// VibrationManager.stop();

@@ -1,21 +1,20 @@
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { StyleSheet } from "react-native";
 
 import { PanGestureHandler } from "react-native-gesture-handler";
-import Animated,
-  {
-    Extrapolate,
-    interpolate,
-    interpolateColor,
-    runOnJS,
-    useAnimatedGestureHandler,
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring,
-  } from "react-native-reanimated";
+import Animated, {
+  Extrapolate,
+  interpolate,
+  interpolateColor,
+  runOnJS,
+  useAnimatedGestureHandler,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
 
-import { BhaktiColors } from "@/constants/Colors";
+import { useTheme } from "../context/ThemeContext";
 
 const BUTTON_WIDTH = 360;
 const BUTTON_HEIGHT = 80;
@@ -37,8 +36,60 @@ const SwipeButton: React.FC<SwipeButtonProps> = ({
   label,
   config,
 }) => {
+  const { theme } = useTheme();
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        swipeCont: {
+          height: BUTTON_HEIGHT,
+          width: BUTTON_WIDTH,
+          backgroundColor: theme.card,
+          borderRadius: BUTTON_HEIGHT,
+          padding: BUTTON_PADDING,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          flexDirection: "row",
+          borderWidth: 2,
+          borderColor: theme.cardBorder,
+        },
+        colorWave: {
+          position: "absolute",
+          left: 0,
+          height: BUTTON_HEIGHT,
+          borderRadius: BUTTON_HEIGHT,
+        },
+        swipeable: {
+          position: "absolute",
+          left: BUTTON_PADDING,
+          height: SWIPEABLE_DIMENSIONS,
+          width: SWIPEABLE_DIMENSIONS,
+          borderRadius: SWIPEABLE_DIMENSIONS,
+          zIndex: 3,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        swipeText: {
+          alignSelf: "center",
+          fontSize: 20,
+          fontWeight: "bold",
+          zIndex: 2,
+          color: theme.text,
+          letterSpacing: 1,
+        },
+        swipeIcon: {
+          color: theme.buttonText,
+          fontSize: 18,
+          fontWeight: "900",
+          textAlign: "center",
+        },
+      }),
+    [theme]
+  );
   // Animated value for X translation
   const X = useSharedValue(0);
+  // small scale value for 'give' animation while dragging
+  const S = useSharedValue(1);
   // Toggled State
   const [toggled, setToggled] = useState(false);
 
@@ -54,6 +105,8 @@ const SwipeButton: React.FC<SwipeButtonProps> = ({
   const animatedGestureHandler = useAnimatedGestureHandler({
     onStart: (_, ctx) => {
       ctx.completed = toggled;
+      // lift/scale up the knob a bit when the user starts touching
+      S.value = withSpring(1.06, { damping: 12, stiffness: 180 });
     },
     onActive: (e, ctx) => {
       let newValue;
@@ -68,6 +121,8 @@ const SwipeButton: React.FC<SwipeButtonProps> = ({
       }
     },
     onEnd: () => {
+      // release scale back to normal
+      S.value = withSpring(1, { damping: 12, stiffness: 200 });
       if (X.value < BUTTON_WIDTH / 2 - SWIPEABLE_DIMENSIONS / 2) {
         X.value = withSpring(0);
         runOnJS(handleComplete)(false);
@@ -95,9 +150,46 @@ const SwipeButton: React.FC<SwipeButtonProps> = ({
         backgroundColor: interpolateColor(
           X.value,
           [0, BUTTON_WIDTH - SWIPEABLE_DIMENSIONS - BUTTON_PADDING],
-          [BhaktiColors.button, BhaktiColors.background] // button to background
+          [theme.button, theme.background] // button to background
         ),
-        transform: [{ translateX: X.value }],
+        transform: [
+          { translateX: X.value },
+          { translateY: interpolate(S.value, [1, 1.06], [0, -3]) },
+          { scale: S.value },
+        ],
+        // subtle shadow/elevation change while dragging
+        shadowOpacity: interpolate(S.value, [1, 1.06], [0.15, 0.32]),
+        elevation: S.value * 6,
+      };
+    }),
+    // animated style for the chevron/icon inside the knob
+    icon: useAnimatedStyle(() => {
+      const tx = interpolate(
+        X.value,
+        [0, H_SWIPE_RANGE],
+        [0, 12],
+        Extrapolate.CLAMP
+      );
+      const rot = interpolate(
+        X.value,
+        [0, H_SWIPE_RANGE],
+        [0, 14],
+        Extrapolate.CLAMP
+      );
+      const scaleIcon = interpolate(S.value, [1, 1.06], [1, 1.12]);
+      const opacity = interpolate(
+        X.value,
+        [0, H_SWIPE_RANGE],
+        [1, 0.6],
+        Extrapolate.CLAMP
+      );
+      return {
+        transform: [
+          { translateX: tx },
+          { rotate: `${rot}deg` },
+          { scale: scaleIcon },
+        ],
+        opacity,
       };
     }),
     swipeText: useAnimatedStyle(() => {
@@ -126,12 +218,16 @@ const SwipeButton: React.FC<SwipeButtonProps> = ({
     <Animated.View style={[styles.swipeCont, AnimatedStyles.swipeCont]}>
       <AnimatedLinearGradient
         style={[AnimatedStyles.colorWave, styles.colorWave]}
-        colors={[BhaktiColors.button, BhaktiColors.background]} // button to background
+        colors={[theme.button, theme.background]} // button to background
         start={{ x: 0.0, y: 0.5 }}
         end={{ x: 1, y: 0.5 }}
       />
       <PanGestureHandler onGestureEvent={animatedGestureHandler}>
-        <Animated.View style={[styles.swipeable, AnimatedStyles.swipeable]} />
+        <Animated.View style={[styles.swipeable, AnimatedStyles.swipeable]}>
+          <Animated.Text style={[styles.swipeIcon, AnimatedStyles.icon]}>
+            »»
+          </Animated.Text>
+        </Animated.View>
       </PanGestureHandler>
       <Animated.Text style={[styles.swipeText, AnimatedStyles.swipeText]}>
         {label || "Swipe me"}
@@ -140,42 +236,6 @@ const SwipeButton: React.FC<SwipeButtonProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
-  swipeCont: {
-    height: BUTTON_HEIGHT,
-    width: BUTTON_WIDTH,
-    backgroundColor: BhaktiColors.card, // card background
-    borderRadius: BUTTON_HEIGHT,
-    padding: BUTTON_PADDING,
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    flexDirection: "row",
-    borderWidth: 2,
-    borderColor: BhaktiColors.cardBorder, // card border
-  },
-  colorWave: {
-    position: "absolute",
-    left: 0,
-    height: BUTTON_HEIGHT,
-    borderRadius: BUTTON_HEIGHT,
-  },
-  swipeable: {
-    position: "absolute",
-    left: BUTTON_PADDING,
-    height: SWIPEABLE_DIMENSIONS,
-    width: SWIPEABLE_DIMENSIONS,
-    borderRadius: SWIPEABLE_DIMENSIONS,
-    zIndex: 3,
-  },
-  swipeText: {
-    alignSelf: "center",
-    fontSize: 20,
-    fontWeight: "bold",
-    zIndex: 2,
-    color: BhaktiColors.text, // text color
-    letterSpacing: 1,
-  },
-});
+// styles are generated from theme via useMemo above
 
 export default SwipeButton;

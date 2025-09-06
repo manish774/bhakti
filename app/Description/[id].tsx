@@ -1,7 +1,8 @@
-import { BhaktiColors } from "@/constants/Colors";
+import Model from "@/components/Model";
+import { VibrationManager } from "@/utils/Vibrate";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Dimensions,
   Image,
@@ -10,9 +11,11 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  TextInput,
   View,
 } from "react-native";
 import { Button, Chip, Divider, Text } from "react-native-paper";
+import { useTheme } from "../../context/ThemeContext";
 import rawJson from "../Data/raw.json";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
@@ -25,10 +28,400 @@ export default function Description() {
   const idParam = params.id as string | undefined;
   const [selectedDevoteeType, setSelectedDevoteeType] = useState<number>(1);
   const [popularDevoteeType, setPopularDevoteeType] = useState<number>(2);
+  const [showModel, setShowModel] = useState<boolean>(false);
+  const [userEmail, setUserEmail] = useState<string>("");
+  const [userPhone, setUserPhone] = useState<string>("");
 
   const item = rawJson.data.find((d: any) => String(d.id) === String(idParam));
+  const { theme } = useTheme();
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        mainContainer: {
+          flex: 1,
+          backgroundColor: theme.background,
+        },
+        scrollView: { flex: 1 },
+        container: { flexGrow: 1, alignItems: "center" },
+        headerGradient: {
+          width: "100%",
+          maxWidth,
+          height: isWeb ? 320 : 280,
+          justifyContent: "center",
+          alignItems: "center",
+        },
+        imageContainer: {
+          width: "90%",
+          height: "80%",
+          borderRadius: 20,
+          overflow: "hidden",
+          elevation: 8,
+          shadowColor: theme.text,
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 0.2,
+          shadowRadius: 16,
+          borderWidth: 3,
+          borderColor: theme.cardBorder,
+        },
+        heroImage: { width: "100%", height: "100%" },
+        placeholderContainer: {
+          width: "90%",
+          height: "80%",
+          backgroundColor: theme.card,
+          borderRadius: 20,
+          justifyContent: "center",
+          alignItems: "center",
+          borderWidth: 3,
+          borderColor: theme.cardBorder,
+        },
+        placeholderIcon: { fontSize: 80, opacity: 0.5 },
+        contentCard: {
+          width: "100%",
+          maxWidth,
+          backgroundColor: theme.card,
+          borderTopLeftRadius: 32,
+          borderTopRightRadius: 32,
+          marginTop: -32,
+          paddingTop: 32,
+          paddingHorizontal: isWeb ? 40 : 20,
+          paddingBottom: 32,
+          elevation: 8,
+          shadowColor: theme.text,
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.1,
+          shadowRadius: 16,
+          borderWidth: 2,
+          borderColor: theme.cardBorder,
+        },
+        titleSection: { alignItems: "center", marginBottom: 24 },
+        mainTitle: {
+          fontWeight: "800",
+          color: theme.text,
+          textAlign: "center",
+          marginBottom: 16,
+          lineHeight: isWeb ? 42 : 36,
+        },
+        templeInfoRow: { alignItems: "center", gap: 12 },
+        templeName: {
+          fontWeight: "600",
+          color: theme.text,
+          textAlign: "center",
+          marginBottom: 8,
+        },
+        locationChip: {
+          backgroundColor: theme.button,
+          borderColor: theme.accent,
+          borderWidth: 1,
+          elevation: 2,
+        },
+        locationChipText: { color: theme.buttonText, fontWeight: "600" },
+        sectionDivider: {
+          backgroundColor: theme.cardBorder,
+          height: 2,
+          marginVertical: 24,
+          borderRadius: 1,
+        },
+        descriptionCard: {
+          backgroundColor: theme.background,
+          borderRadius: 16,
+          padding: 20,
+          borderWidth: 2,
+          borderColor: theme.cardBorder,
+          elevation: 2,
+          shadowColor: theme.text,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+        },
+        descriptionText: {
+          fontSize: 16,
+          lineHeight: 26,
+          color: theme.text,
+          marginBottom: 16,
+          textAlign: "justify",
+        },
+        pricingCard: {
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          backgroundColor: theme.background,
+          padding: 20,
+          borderRadius: 16,
+          borderWidth: 2,
+          borderColor: theme.cardBorder,
+          elevation: 2,
+          shadowColor: theme.text,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+        },
+        recommendedCard: {
+          backgroundColor: theme.button,
+          borderColor: theme.accent,
+          borderWidth: 3,
+          position: "relative",
+          elevation: 4,
+          shadowOpacity: 0.2,
+        },
+        recommendedBadge: {
+          position: "absolute",
+          top: -8,
+          right: 16,
+          backgroundColor: theme.accent,
+          paddingHorizontal: 12,
+          paddingVertical: 4,
+          borderRadius: 12,
+          elevation: 2,
+        },
+        recommendedText: {
+          color: theme.buttonText,
+          fontSize: 12,
+          fontWeight: "700",
+        },
+        planLeft: { flex: 1 },
+        planName: {
+          fontSize: 18,
+          fontWeight: "700",
+          color: theme.text,
+          marginBottom: 4,
+        },
+        recommendedPlanName: { color: theme.buttonText },
+        planSubtitle: {
+          fontSize: 13,
+          color: theme.text,
+          fontWeight: "500",
+          opacity: 0.8,
+        },
+        recommendedPlanSubtitle: { color: theme.buttonText, opacity: 0.9 },
+        planPrice: { fontSize: 22, fontWeight: "800", color: theme.text },
+        recommendedPrice: { color: theme.buttonText },
+        panditCard: {
+          backgroundColor: theme.background,
+          borderRadius: 20,
+          padding: 24,
+          borderWidth: 2,
+          borderColor: theme.cardBorder,
+          elevation: 3,
+          shadowColor: theme.text,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+        },
+        panditHeader: {
+          flexDirection: "row",
+          alignItems: "center",
+          marginBottom: 16,
+        },
+        panditAvatar: {
+          width: 60,
+          height: 60,
+          borderRadius: 30,
+          backgroundColor: theme.button,
+          justifyContent: "center",
+          alignItems: "center",
+          marginRight: 16,
+          elevation: 4,
+          shadowColor: theme.text,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.2,
+          shadowRadius: 8,
+          borderWidth: 2,
+          borderColor: theme.accent,
+        },
+        panditAvatarText: { fontSize: 28, color: theme.buttonText },
+        panditInfo: { flex: 1 },
+        panditName: {
+          fontSize: 20,
+          fontWeight: "700",
+          color: theme.text,
+          marginBottom: 4,
+        },
+        panditExperience: {
+          fontSize: 14,
+          color: theme.text,
+          fontWeight: "500",
+          opacity: 0.8,
+        },
+        panditDescription: { fontSize: 15, lineHeight: 24, color: theme.text },
+        deliveryCard: {
+          backgroundColor: theme.background,
+          borderRadius: 16,
+          padding: 20,
+          borderWidth: 2,
+          borderColor: theme.cardBorder,
+          elevation: 2,
+          shadowColor: theme.text,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+        },
+        deliveryRow: { marginBottom: 16 },
+        deliveryItem: { flexDirection: "row", alignItems: "center", gap: 16 },
+        deliveryIcon: { fontSize: 24 },
+        deliveryLabel: {
+          fontSize: 16,
+          fontWeight: "700",
+          color: theme.text,
+          marginBottom: 4,
+        },
+        deliverySubtext: { fontSize: 14, color: theme.text, opacity: 0.7 },
+        bottomSpacer: { height: 100 },
+        fixedBottomContainer: {
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: "white",
+          elevation: 10,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.15,
+          shadowRadius: 8,
+          paddingHorizontal: 16,
+          paddingTop: 12,
+          paddingBottom: isWeb ? 16 : Platform.OS === "ios" ? 32 : 16,
+        },
+        fixedBookButton: {
+          backgroundColor: theme.accent,
+          borderRadius: 0,
+          width: "100%",
+          elevation: 4,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.2,
+          shadowRadius: 8,
+        },
+        fixedButtonContent: { paddingVertical: 16 },
+        fixedBookButtonText: {
+          color: "white",
+          fontWeight: "700",
+          fontSize: 18,
+        },
+        errorContainer: {
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+        },
+        errorGradient: {
+          width: "100%",
+          height: "100%",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 20,
+        },
+        errorContent: {
+          backgroundColor: theme.card,
+          padding: 40,
+          borderRadius: 24,
+          alignItems: "center",
+          maxWidth: 400,
+          width: "100%",
+          elevation: 8,
+          shadowColor: theme.text,
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 0.2,
+          shadowRadius: 20,
+          borderWidth: 2,
+          borderColor: theme.cardBorder,
+        },
+        errorEmoji: { fontSize: 64, marginBottom: 16 },
+        errorTitle: {
+          color: theme.text,
+          fontWeight: "700",
+          marginBottom: 12,
+          textAlign: "center",
+        },
+        errorText: {
+          color: theme.text,
+          textAlign: "center",
+          marginBottom: 24,
+          lineHeight: 22,
+          fontSize: 16,
+          opacity: 0.8,
+        },
+        errorButton: {
+          backgroundColor: theme.button,
+          borderRadius: 12,
+          minWidth: 180,
+          elevation: 4,
+        },
+        errorButtonText: {
+          color: theme.buttonText,
+          fontWeight: "700",
+          fontSize: 16,
+        },
+        quickInfoSection: {
+          marginBottom: 24,
+        },
+        infoGrid: {
+          flexDirection: isWeb ? "row" : "row",
+          justifyContent: "space-around",
+          gap: isWeb ? 24 : 12,
+        },
+        infoCard: {
+          flex: 1,
+          alignItems: "center",
+          backgroundColor: theme.background,
+          padding: isWeb ? 20 : 16,
+          borderRadius: 16,
+          borderWidth: 2,
+          borderColor: theme.cardBorder,
+          minHeight: isWeb ? 120 : 100,
+          justifyContent: "center",
+          elevation: 3,
+          shadowColor: theme.text,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+        },
+        infoIcon: {
+          fontSize: isWeb ? 28 : 24,
+          marginBottom: 8,
+        },
+        infoLabel: {
+          fontSize: 12,
+          color: theme.text,
+          fontWeight: "600",
+          textAlign: "center",
+          marginBottom: 4,
+          opacity: 0.8,
+        },
+        infoValue: {
+          fontSize: 14,
+          fontWeight: "700",
+          color: theme.text,
+          textAlign: "center",
+        },
+        section: {
+          marginBottom: 24,
+        },
+        pricingContainer: {
+          gap: 12,
+        },
+        sectionHeader: {
+          fontWeight: "700",
+          color: theme.text,
+          marginBottom: 16,
+          textAlign: isWeb ? "left" : "center",
+        },
+        input: {
+          width: "100%",
+          marginBottom: 10,
+        },
+        button: {
+          width: "100%",
+        },
+      }),
+    [theme]
+  );
 
-  const openWhatsApp = () => {
+  const openWhatsApp = ({
+    name,
+    phone,
+  }: {
+    name: string;
+    phone: number | string;
+  }) => {
     const phoneNumber = "919031440979"; // India country code + your number
     const packageType =
       selectedDevoteeType === 1
@@ -37,7 +430,7 @@ export default function Description() {
         ? "Two Devotees"
         : "Four Devotees";
 
-    const message = `Hi Prayer, you have selected package for ${packageType} for ${item?.temple?.name} temple puja`;
+    const message = `Hi ${name}, you have selected package for ${packageType} for ${item?.temple?.name} temple puja. ${userPhone}`;
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `whatsapp://send?phone=${phoneNumber}&text=${encodedMessage}`;
     const webWhatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
@@ -58,11 +451,66 @@ export default function Description() {
       });
   };
 
+  const userForm = () => {
+    return (
+      <View>
+        <TextInput
+          value={userEmail}
+          onChangeText={setUserEmail}
+          keyboardType={"name-phone-pad"}
+          placeholder={"Name"}
+          placeholderTextColor={`${theme.text}99`}
+          style={[
+            styles.input,
+            {
+              backgroundColor: theme.card,
+              color: theme.text,
+              borderColor: theme.cardBorder,
+              borderWidth: 1,
+              padding: 12,
+              borderRadius: 8,
+            },
+          ]}
+        />
+        <TextInput
+          value={userPhone}
+          onChangeText={setUserPhone}
+          keyboardType={"number-pad"}
+          placeholder={"Phone number"}
+          placeholderTextColor={`${theme.text}99`}
+          style={[
+            styles.input,
+            {
+              backgroundColor: theme.card,
+              color: theme.text,
+              borderColor: theme.cardBorder,
+              borderWidth: 1,
+              padding: 12,
+              borderRadius: 8,
+            },
+          ]}
+        />
+
+        <Button
+          mode="contained"
+          onPress={() => {
+            openWhatsApp({ name: userEmail, phone: userPhone }); // Placeholder submit action — replace with real logic
+
+            setTimeout(() => setShowModel(false), 100);
+          }}
+          style={[styles.button, { backgroundColor: theme.button }]}
+          labelStyle={{ color: theme.buttonText, fontWeight: "700" }}
+        >
+          Continue
+        </Button>
+      </View>
+    );
+  };
   if (!item) {
     return (
       <View style={styles.errorContainer}>
         <LinearGradient
-          colors={[BhaktiColors.background, BhaktiColors.card]}
+          colors={[theme.background, theme.card]}
           style={styles.errorGradient}
         >
           <View style={styles.errorContent}>
@@ -96,7 +544,7 @@ export default function Description() {
       >
         {/* Hero Header with Gradient */}
         <LinearGradient
-          colors={[BhaktiColors.background, BhaktiColors.card]}
+          colors={[theme.background, theme.card]}
           style={styles.headerGradient}
         >
           {item.temple.image ? (
@@ -329,7 +777,10 @@ export default function Description() {
       <View>
         <Button
           mode="contained"
-          onPress={openWhatsApp}
+          onPress={() => {
+            VibrationManager.selection();
+            setShowModel(true);
+          }}
           style={styles.fixedBookButton}
           contentStyle={styles.fixedButtonContent}
           labelStyle={styles.fixedBookButtonText}
@@ -337,461 +788,18 @@ export default function Description() {
           Book This Puja
         </Button>
       </View>
+      {
+        <Model
+          content={<View>{userForm()}</View>}
+          isVisible={showModel}
+          onRequestClose={() => {
+            setShowModel(false);
+          }}
+          title={"Fill details"}
+        />
+      }
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  mainContainer: {
-    flex: 1,
-    backgroundColor: BhaktiColors.background,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  container: {
-    flexGrow: 1,
-    alignItems: "center",
-  },
-
-  // Header Section
-  headerGradient: {
-    width: "100%",
-    maxWidth,
-    height: isWeb ? 320 : 280,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  imageContainer: {
-    width: "90%",
-    height: "80%",
-    borderRadius: 20,
-    overflow: "hidden",
-    elevation: 8,
-    shadowColor: BhaktiColors.text,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    borderWidth: 3,
-    borderColor: BhaktiColors.cardBorder,
-  },
-  heroImage: {
-    width: "100%",
-    height: "100%",
-  },
-  placeholderContainer: {
-    width: "90%",
-    height: "80%",
-    backgroundColor: BhaktiColors.card,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 3,
-    borderColor: BhaktiColors.cardBorder,
-  },
-  placeholderIcon: {
-    fontSize: 80,
-    opacity: 0.5,
-  },
-
-  // Content Card
-  contentCard: {
-    width: "100%",
-    maxWidth,
-    backgroundColor: BhaktiColors.card,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    marginTop: -32,
-    paddingTop: 32,
-    paddingHorizontal: isWeb ? 40 : 20,
-    paddingBottom: 32,
-    elevation: 8,
-    shadowColor: BhaktiColors.text,
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
-    borderWidth: 2,
-    borderColor: BhaktiColors.cardBorder,
-  },
-
-  // Title Section
-  titleSection: {
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  mainTitle: {
-    fontWeight: "800",
-    color: BhaktiColors.text,
-    textAlign: "center",
-    marginBottom: 16,
-    lineHeight: isWeb ? 42 : 36,
-  },
-  templeInfoRow: {
-    alignItems: "center",
-    gap: 12,
-  },
-  templeName: {
-    fontWeight: "600",
-    color: BhaktiColors.text,
-    textAlign: "center",
-    marginBottom: 8,
-  },
-  locationChip: {
-    backgroundColor: BhaktiColors.button,
-    borderColor: BhaktiColors.accent,
-    borderWidth: 1,
-    elevation: 2,
-  },
-  locationChipText: {
-    color: BhaktiColors.buttonText,
-    fontWeight: "600",
-  },
-
-  // Quick Info Section
-  quickInfoSection: {
-    marginBottom: 24,
-  },
-  infoGrid: {
-    flexDirection: isWeb ? "row" : "row",
-    justifyContent: "space-around",
-    gap: isWeb ? 24 : 12,
-  },
-  infoCard: {
-    flex: 1,
-    alignItems: "center",
-    backgroundColor: BhaktiColors.background,
-    padding: isWeb ? 20 : 16,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: BhaktiColors.cardBorder,
-    minHeight: isWeb ? 120 : 100,
-    justifyContent: "center",
-    elevation: 3,
-    shadowColor: BhaktiColors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  infoIcon: {
-    fontSize: isWeb ? 28 : 24,
-    marginBottom: 8,
-  },
-  infoLabel: {
-    fontSize: 12,
-    color: BhaktiColors.text,
-    fontWeight: "600",
-    textAlign: "center",
-    marginBottom: 4,
-    opacity: 0.8,
-  },
-  infoValue: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: BhaktiColors.text,
-    textAlign: "center",
-  },
-
-  // Sections
-  section: {
-    marginBottom: 24,
-  },
-  sectionHeader: {
-    fontWeight: "700",
-    color: BhaktiColors.text,
-    marginBottom: 16,
-    textAlign: isWeb ? "left" : "center",
-  },
-  sectionDivider: {
-    backgroundColor: BhaktiColors.cardBorder,
-    height: 2,
-    marginVertical: 24,
-    borderRadius: 1,
-  },
-
-  // Description
-  descriptionCard: {
-    backgroundColor: BhaktiColors.background,
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 2,
-    borderColor: BhaktiColors.cardBorder,
-    elevation: 2,
-    shadowColor: BhaktiColors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  descriptionText: {
-    fontSize: 16,
-    lineHeight: 26,
-    color: BhaktiColors.text,
-    marginBottom: 16,
-    textAlign: "justify",
-  },
-
-  // Pricing
-  pricingContainer: {
-    gap: 12,
-  },
-  pricingCard: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: BhaktiColors.background,
-    padding: 20,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: BhaktiColors.cardBorder,
-    elevation: 2,
-    shadowColor: BhaktiColors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  recommendedCard: {
-    backgroundColor: BhaktiColors.button,
-    borderColor: BhaktiColors.accent,
-    borderWidth: 3,
-    position: "relative",
-    elevation: 4,
-    shadowOpacity: 0.2,
-  },
-  recommendedBadge: {
-    position: "absolute",
-    top: -8,
-    right: 16,
-    backgroundColor: BhaktiColors.accent,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-    elevation: 2,
-  },
-  recommendedText: {
-    color: BhaktiColors.buttonText,
-    fontSize: 12,
-    fontWeight: "700",
-  },
-  planLeft: {
-    flex: 1,
-  },
-  planName: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: BhaktiColors.text,
-    marginBottom: 4,
-  },
-  recommendedPlanName: {
-    color: BhaktiColors.buttonText,
-  },
-  planSubtitle: {
-    fontSize: 13,
-    color: BhaktiColors.text,
-    fontWeight: "500",
-    opacity: 0.8,
-  },
-  recommendedPlanSubtitle: {
-    color: BhaktiColors.buttonText,
-    opacity: 0.9,
-  },
-  planPrice: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: BhaktiColors.text,
-  },
-  recommendedPrice: {
-    color: BhaktiColors.buttonText,
-  },
-
-  // Pandit Section
-  panditCard: {
-    backgroundColor: BhaktiColors.background,
-    borderRadius: 20,
-    padding: 24,
-    borderWidth: 2,
-    borderColor: BhaktiColors.cardBorder,
-    elevation: 3,
-    shadowColor: BhaktiColors.text,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-  },
-  panditHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  panditAvatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: BhaktiColors.button,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 16,
-    elevation: 4,
-    shadowColor: BhaktiColors.text,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    borderWidth: 2,
-    borderColor: BhaktiColors.accent,
-  },
-  panditAvatarText: {
-    fontSize: 28,
-    color: BhaktiColors.buttonText,
-  },
-  panditInfo: {
-    flex: 1,
-  },
-  panditName: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: BhaktiColors.text,
-    marginBottom: 4,
-  },
-  panditExperience: {
-    fontSize: 14,
-    color: BhaktiColors.text,
-    fontWeight: "500",
-    opacity: 0.8,
-  },
-  panditDescription: {
-    fontSize: 15,
-    lineHeight: 24,
-    color: BhaktiColors.text,
-  },
-
-  // Delivery Section
-  deliveryCard: {
-    backgroundColor: BhaktiColors.background,
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 2,
-    borderColor: BhaktiColors.cardBorder,
-    elevation: 2,
-    shadowColor: BhaktiColors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  deliveryRow: {
-    marginBottom: 16,
-  },
-  deliveryItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 16,
-  },
-  deliveryIcon: {
-    fontSize: 24,
-  },
-  deliveryLabel: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: BhaktiColors.text,
-    marginBottom: 4,
-  },
-  deliverySubtext: {
-    fontSize: 14,
-    color: BhaktiColors.text,
-    opacity: 0.7,
-  },
-
-  // Bottom Spacer to prevent content from being hidden behind fixed button
-  bottomSpacer: {
-    height: 100, // Height of fixed button + padding
-  },
-
-  // Fixed Bottom Button
-  fixedBottomContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "white",
-    elevation: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: isWeb ? 16 : Platform.OS === "ios" ? 32 : 16, // Extra padding for iOS safe area
-  },
-  fixedBookButton: {
-    backgroundColor: BhaktiColors.accent, // Saffron color
-    borderRadius: 0,
-    width: "100%",
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-  },
-  fixedButtonContent: {
-    paddingVertical: 16,
-  },
-  fixedBookButtonText: {
-    color: "white",
-    fontWeight: "700",
-    fontSize: 18,
-  },
-
-  // Error States
-  errorContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  errorGradient: {
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  errorContent: {
-    backgroundColor: BhaktiColors.card,
-    padding: 40,
-    borderRadius: 24,
-    alignItems: "center",
-    maxWidth: 400,
-    width: "100%",
-    elevation: 8,
-    shadowColor: BhaktiColors.text,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 20,
-    borderWidth: 2,
-    borderColor: BhaktiColors.cardBorder,
-  },
-  errorEmoji: {
-    fontSize: 64,
-    marginBottom: 16,
-  },
-  errorTitle: {
-    color: BhaktiColors.text,
-    fontWeight: "700",
-    marginBottom: 12,
-    textAlign: "center",
-  },
-  errorText: {
-    color: BhaktiColors.text,
-    textAlign: "center",
-    marginBottom: 24,
-    lineHeight: 22,
-    fontSize: 16,
-    opacity: 0.8,
-  },
-  errorButton: {
-    backgroundColor: BhaktiColors.button,
-    borderRadius: 12,
-    minWidth: 180,
-    elevation: 4,
-  },
-  errorButtonText: {
-    color: BhaktiColors.buttonText,
-    fontWeight: "700",
-    fontSize: 16,
-  },
-});
+// local themed styles created above with useMemo

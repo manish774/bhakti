@@ -1,6 +1,9 @@
 import { colorCombinations } from "@/constants/Colors";
-import React, { useState } from "react";
+import { useTheme } from "@/context/ThemeContext";
+import { VibrationManager } from "@/utils/Vibrate";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  Animated,
   Dimensions,
   Platform,
   Pressable,
@@ -12,14 +15,46 @@ import {
 
 const { width: screenWidth } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
-
 export default function SettingsScreen() {
-  const [selectedTheme, setSelectedTheme] = useState(8); // Default to Warm Ember (recommended)
+  const { switchTheme, theme } = useTheme();
+  const themeIndexByname = colorCombinations.findIndex(
+    (x) => x.name === theme.name
+  );
+  const [selectedTheme, setSelectedTheme] = useState(themeIndexByname); // Default to Warm Ember (recommended)
+
+  // keep selectedTheme in sync if theme is loaded/changed elsewhere (persisted load)
+  useEffect(() => {
+    setSelectedTheme(themeIndexByname);
+  }, [themeIndexByname]);
+
+  // Toast state + animation
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const toastAnim = useRef(new Animated.Value(0)).current;
+
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    setToastVisible(true);
+    Animated.timing(toastAnim, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      // hide after 2s
+      setTimeout(() => {
+        Animated.timing(toastAnim, {
+          toValue: 0,
+          duration: 250,
+          useNativeDriver: true,
+        }).start(() => setToastVisible(false));
+      }, 2000);
+    });
+  };
 
   const handleThemeSelect = (index: number) => {
     setSelectedTheme(index);
-    // Here you would typically save to context/storage
-    console.log("Selected theme:", colorCombinations[index].name);
+
+    VibrationManager.lightImpact();
   };
 
   const numColumns = isWeb ? 3 : 2;
@@ -184,6 +219,28 @@ export default function SettingsScreen() {
         </View>
       </ScrollView>
 
+      {/* Toast */}
+      {toastVisible && (
+        <Animated.View
+          style={[
+            styles.toastContainer,
+            {
+              transform: [
+                {
+                  translateY: toastAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [40, 0],
+                  }),
+                },
+              ],
+              opacity: toastAnim,
+            },
+          ]}
+        >
+          <Text style={styles.toastText}>{toastMessage}</Text>
+        </Animated.View>
+      )}
+
       {/* Apply Button */}
       <View style={styles.bottomContainer}>
         <Pressable
@@ -193,10 +250,11 @@ export default function SettingsScreen() {
           ]}
           onPress={() => {
             // Apply theme logic here
-            console.log(
-              "Applying theme:",
-              colorCombinations[selectedTheme].name
-            );
+            const name = colorCombinations[selectedTheme].name;
+
+            switchTheme(name);
+            VibrationManager.lightImpact();
+            showToast(`${name} theme applied`);
           }}
         >
           <Text
@@ -387,5 +445,22 @@ const styles = StyleSheet.create({
   applyButtonText: {
     fontSize: 18,
     fontWeight: "700",
+  },
+  toastContainer: {
+    position: "absolute",
+    left: 20,
+    right: 20,
+    bottom: 90,
+    backgroundColor: "#111",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 6,
+  },
+  toastText: {
+    color: "#fff",
+    fontWeight: "600",
   },
 });

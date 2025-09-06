@@ -1,5 +1,6 @@
-import { BhaktiColors } from "@/constants/Colors";
+import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 import { AuthProvider } from "@/context/UserContext";
+import { VibrationManager } from "@/utils/Vibrate";
 import { Stack, useRouter } from "expo-router";
 import { Image, TouchableOpacity } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -9,6 +10,7 @@ import {
 } from "react-native-paper";
 // Note: Home is imported in the index route; keep layout minimal.
 function MainStack() {
+  const { theme } = useTheme();
   function Gear() {
     const router = useRouter();
     return (
@@ -26,16 +28,25 @@ function MainStack() {
         name="index"
         options={{
           title: "Home",
-          headerStyle: { backgroundColor: BhaktiColors.background },
-          headerTitleStyle: { color: BhaktiColors.error, fontWeight: "bold" },
+          headerStyle: { backgroundColor: theme.background },
+          headerTitleStyle: {
+            color: theme.accent,
+            fontWeight: "bold",
+          },
           headerRight: () => {
             return <Gear />;
           },
           headerLeft: () => (
-            <Image
-              source={require("@/assets/gods/Hanuman.png")}
-              style={{ width: 30, height: 30, marginLeft: 8 }}
-            />
+            <TouchableOpacity
+              onPress={() => {
+                VibrationManager.pulse();
+              }}
+            >
+              <Image
+                source={require("@/assets/gods/Hanuman.png")}
+                style={{ width: 30, height: 30, marginLeft: 8 }}
+              />
+            </TouchableOpacity>
           ),
         }}
       />
@@ -43,8 +54,8 @@ function MainStack() {
         name="Description"
         options={{
           title: "Description",
-          headerStyle: { backgroundColor: BhaktiColors.background },
-          headerTitleStyle: { color: BhaktiColors.error, fontWeight: "bold" },
+          headerStyle: { backgroundColor: theme.background },
+          headerTitleStyle: { color: theme.error, fontWeight: "bold" },
           headerRight: () => {
             return (
               <>
@@ -74,9 +85,11 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <PaperProvider theme={theme}>
-        <AuthProvider>
-          <MainStack />
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <MainStack />
+          </AuthProvider>
+        </ThemeProvider>
       </PaperProvider>
     </GestureHandlerRootView>
   );

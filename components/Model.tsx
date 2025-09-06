@@ -6,7 +6,7 @@ interface ModelProps {
   isVisible: boolean;
   transparent?: boolean;
   onRequestClose: () => void;
-  coverSource: any; // image source for Card.Cover
+  coverSource?: any; // image source for Card.Cover
   title: string;
   content: React.ReactNode;
 }
@@ -16,7 +16,7 @@ export default function Model(props: ModelProps) {
     isVisible,
     transparent = true,
     onRequestClose,
-    coverSource,
+
     title,
     content,
   } = props;
@@ -31,7 +31,6 @@ export default function Model(props: ModelProps) {
       <View style={styles.modalBackground}>
         <View style={styles.modalContent}>
           <Card>
-            <Card.Cover source={coverSource} />
             <Card.Title title={title} />
             <Card.Content>{content}</Card.Content>
             <Card.Actions>
@@ -54,7 +53,7 @@ const styles = StyleSheet.create({
   modalContent: {
     backgroundColor: "#fff",
     borderRadius: 10,
-    padding: 20,
-    minWidth: 300,
+    padding: 0,
+    minWidth: 350,
   },
 });

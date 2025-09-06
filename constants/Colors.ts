@@ -202,6 +202,4 @@ export const colorCombinations = [
   },
 ];
 
-// CHANGED: Using the Sacred Fire theme (index 8) instead of the problematic teal combination
-// This provides much better contrast and a vibrant, spiritual feel with saffron colors
-export const BhaktiColors = colorCombinations[8]; // 🧡 Warm Ember - Sacred Fire theme
+export const BhaktiColors = colorCombinations[8];
