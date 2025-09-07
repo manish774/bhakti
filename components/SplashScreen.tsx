@@ -1,6 +1,13 @@
-import { isWeb } from "@/utils/Device";
+// removed isWeb import — not needed after using useWindowDimensions for sizing
 import React, { useEffect, useRef } from "react";
-import { Animated, Image, Platform, StyleSheet, View } from "react-native";
+import {
+  Animated,
+  Image,
+  Platform,
+  StyleSheet,
+  View,
+  useWindowDimensions,
+} from "react-native";
 // import { Text } from "react-native-paper";
 
 export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
@@ -24,15 +31,22 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
     });
   }, []);
 
+  //get
+  const splashImages = [
+    require("../assets/splash/5.jpg"),
+    require("../assets/splash/1.jpg"),
+    require("../assets/splash/2.jpg"),
+    require("../assets/splash/3.jpg"),
+    require("../assets/splash/4.jpg"),
+  ];
+  const randomSplashImage = Math.floor(Math.random() * splashImages.length);
+  const { width, height } = useWindowDimensions();
+
   return (
     <View style={styles.container}>
       <Image
-        source={
-          isWeb()
-            ? require("../assets/images/alan.jpg")
-            : require("../assets/images/Initial/1.jpg")
-        }
-        style={StyleSheet.absoluteFill}
+        source={splashImages[randomSplashImage]}
+        style={[StyleSheet.absoluteFill, { width, height }]}
         resizeMode="cover"
       />
       <Animated.View
@@ -46,7 +60,7 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
       >
         <View style={styles.textContainer}>
           <Animated.Text style={styles.splashText}>
-            Digital Devotion
+            {/* Digital Devotion */}
           </Animated.Text>
         </View>
       </Animated.View>

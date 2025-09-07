@@ -1,6 +1,8 @@
 import FlowerRain from "@/components/FlowerRain";
 import SwipeButton from "@/components/SwipeButton";
+import { Core, TempleMetadata } from "@/serviceManager/ServiceManager";
 import { VibrationManager } from "@/utils/Vibrate";
+import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -30,6 +32,59 @@ const { width: screenWidth } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
 const numColumns = isWeb && screenWidth > 768 ? 2 : 1;
 
+// AnimatedLetters: splits a string and animates each character in sequence
+function AnimatedLetters({
+  text,
+  style,
+  delay = 0,
+}: {
+  text: string;
+  style?: any;
+  delay?: number;
+}) {
+  const letters = text.split("");
+  const animValues = useRef(letters.map(() => new Animated.Value(0))).current;
+
+  useEffect(() => {
+    const animations = animValues.map((val, i) =>
+      Animated.timing(val, {
+        toValue: 1,
+        duration: 300,
+        delay: delay + i * 70,
+        useNativeDriver: true,
+      })
+    );
+
+    Animated.stagger(50, animations).start();
+  }, [animValues, delay]);
+
+  return (
+    <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+      {letters.map((char, i) => (
+        <Animated.Text
+          key={`char-${i}`}
+          style={[
+            style,
+            {
+              opacity: animValues[i],
+              transform: [
+                {
+                  translateY: animValues[i].interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [8, 0],
+                  }),
+                },
+              ],
+            },
+          ]}
+        >
+          {char}
+        </Animated.Text>
+      ))}
+    </View>
+  );
+}
+
 interface TempleInfo {
   name: string;
   location: string;
@@ -50,60 +105,39 @@ interface TempleInfo {
   };
 }
 
-interface TempleList {
-  id: string;
-  title: string;
-  lastDate: string;
-  description: {
-    point1: string;
-    point2: string;
-  };
-  temple: TempleInfo;
-}
-
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [visibleCount, setVisibleCount] = useState(6);
   const router = useRouter();
+  const navigation: any = useNavigation();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef<FlatList>(null);
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
+  // Splash images to use as placeholders when item image is missing
+  const splashImages = useMemo(
+    () => [
+      require("@/assets/splash/5.jpg"),
+      require("@/assets/splash/1.jpg"),
+      require("@/assets/splash/2.jpg"),
+      require("@/assets/splash/3.jpg"),
+      require("@/assets/splash/4.jpg"),
+    ],
+    []
+  );
+
   // Process data once and memoize
-  const allData: TempleList[] = useMemo(() => {
-    if (!rawJson?.data || !Array.isArray(rawJson.data)) {
+  const allData: TempleMetadata[] = useMemo(() => {
+    const metadata: TempleMetadata[] = rawJson?.data;
+    if (!metadata || !Array.isArray(metadata)) {
       console.log("No data found in rawJson");
       return [];
     }
 
-    return rawJson.data.map((item: any, index: number) => ({
-      id: item.id || index.toString(),
-      title: item.title || "",
-      lastDate: item.lastDate || "",
-      description: item.description || { point1: "", point2: "" },
-      temple: {
-        name: item.temple?.name || "",
-        location: item.temple?.location || "",
-        image: typeof item.temple?.image === "string" ? item.temple.image : "",
-        price: item.temple?.price || {
-          oneDevotee: 0,
-          twoDevotees: 0,
-          fourDevotees: 0,
-          extraCharges: 0,
-        },
-        prasadDelivery: item.temple?.prasadDelivery || {
-          included: false,
-          deliveryTime: "",
-        },
-        pandit: item.temple?.pandit || {
-          name: "",
-          about: "",
-        },
-      },
-    }));
+    return metadata;
   }, []);
 
   // Filter data based on search
@@ -115,9 +149,11 @@ export default function Home() {
     const query = searchQuery.toLowerCase().trim();
     return allData.filter((item) => {
       return (
-        item.title.toLowerCase().includes(query) ||
-        item.temple.name.toLowerCase().includes(query) ||
-        item.temple.location.toLowerCase().includes(query)
+        item[Core.Name].toLowerCase().includes(query) ||
+        JSON.stringify(item?.[Core.Description])
+          ?.toLowerCase()
+          .includes(query) ||
+        item?.[Core.Temple].location.toLowerCase().includes(query)
       );
     });
   }, [allData, searchQuery]);
@@ -137,6 +173,13 @@ export default function Home() {
       }).start();
     }
   }, [showSplash, fadeAnim]);
+
+  // Toggle the native/header visibility while splash is showing
+  useEffect(() => {
+    if (navigation && typeof navigation.setOptions === "function") {
+      navigation.setOptions({ headerShown: !showSplash });
+    }
+  }, [navigation, showSplash]);
 
   // Reset visible count when search changes
   useEffect(() => {
@@ -170,11 +213,11 @@ export default function Home() {
 
   // Handle booking
   const handleBooking = useCallback(
-    (item: TempleList) => {
+    (item: TempleMetadata) => {
       VibrationManager.selection();
       router.push({
         pathname: "/Description/[id]",
-        params: { id: item.id },
+        params: { id: item?.[Core.id] },
       });
     },
     [router]
@@ -182,7 +225,7 @@ export default function Home() {
 
   // Render item with proper animation
   const renderItem = useCallback(
-    ({ item }: { item: TempleList }) => {
+    ({ item }: { item: TempleMetadata }) => {
       return (
         <View style={[styles.cardContainer]}>
           <Animated.View style={{ opacity: fadeAnim }}>
@@ -192,10 +235,10 @@ export default function Home() {
             >
               {/* Hero Image Section */}
               <View style={styles.imageSection}>
-                {item.temple.image ? (
+                {item?.[Core.Temple].image ? (
                   <>
                     <Image
-                      source={{ uri: item.temple.image }}
+                      source={{ uri: item?.[Core.Temple].image }}
                       style={styles.cardImage}
                       resizeMode="cover"
                     />
@@ -209,14 +252,18 @@ export default function Home() {
                         style={styles.dateChip}
                         textStyle={styles.dateChipText}
                       >
-                        Until {item.lastDate}
+                        Until {item?.[Core.PujaDescription].lastDate}
                       </Chip>
                     </View>
                   </>
                 ) : (
                   <View style={styles.placeholderImage}>
                     <Image
-                      source={require("@/assets/gods/shiv.jpg")}
+                      source={
+                        splashImages[
+                          Math.floor(Math.random() * splashImages.length)
+                        ]
+                      }
                       style={styles.cardImage}
                       resizeMode="cover"
                     />
@@ -232,16 +279,16 @@ export default function Home() {
                     style={styles.cardTitle}
                     numberOfLines={2}
                   >
-                    {item.title}
+                    {item?.[Core.Name]}
                   </Text>
                   <View style={styles.templeInfo}>
                     <Text style={styles.templeName} numberOfLines={1}>
-                      {item.temple.name}
+                      {item?.[Core.Temple]?.name}
                     </Text>
                     <View style={styles.locationRow}>
                       <Text style={styles.locationIcon}>📍</Text>
                       <Text style={styles.location} numberOfLines={1}>
-                        {item.temple.location}
+                        {item?.[Core.Temple].location}
                       </Text>
                     </View>
                   </View>
@@ -251,9 +298,9 @@ export default function Home() {
                 <View style={styles.priceSection}>
                   <Text style={styles.priceLabel}>Starting from</Text>
                   <Text style={styles.priceValue}>
-                    ₹{item.temple.price.oneDevotee.toLocaleString("en-IN")}
+                    ₹{item?.[Core.StartPrice].toLocaleString("en-IN")}
                   </Text>
-                  {item.temple.prasadDelivery?.included && (
+                  {item?.[Core.Temple].prasadDelivery?.included && (
                     <Chip
                       style={styles.prasadChip}
                       textStyle={styles.prasadChipText}
@@ -292,7 +339,7 @@ export default function Home() {
         </View>
       );
     },
-    [fadeAnim, handleBooking, styles, theme]
+    [fadeAnim, handleBooking, styles, theme, splashImages]
   );
 
   // Static header component to prevent re-renders affecting search
@@ -304,11 +351,12 @@ export default function Home() {
           style={styles.headerGradient}
         >
           <FlowerRain />
-          <Text variant="headlineLarge" style={styles.headerTitle}>
-            Sacred Pujas
-          </Text>
+          <AnimatedLetters
+            text="Experience spiritual bliss"
+            style={styles.headerTitle}
+          />
           <Text style={styles.headerSubtitle}>
-            Divine blessings at your fingertips
+            Your path to divine blessings begins with a simple booking.
           </Text>
         </LinearGradient>
 
@@ -348,10 +396,10 @@ export default function Home() {
       <View style={styles.emptyState}>
         <Text style={styles.emptyIcon}>🔍</Text>
         <Text variant="titleLarge" style={styles.emptyTitle}>
-          No pujas found
+          We did not find this
         </Text>
         <Text style={styles.emptyText}>
-          Try searching with different keywords or check back later.
+          Try different keywords or clear the search to see all pujas.
         </Text>
       </View>
     );
@@ -390,7 +438,7 @@ export default function Home() {
         ref={flatListRef}
         data={visibleData}
         renderItem={renderItem}
-        keyExtractor={(item) => `${item.id}-${searchQuery}`}
+        keyExtractor={(item) => `${item?.[Core.id]}-${searchQuery}`}
         numColumns={numColumns}
         ListHeaderComponent={HeaderComponent}
         ListFooterComponent={FooterComponent}

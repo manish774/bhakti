@@ -258,14 +258,19 @@ export const createStyles = (theme: any) => {
     },
 
     // Empty State
+    // When FlatList is empty we want the content to center in the
+    // scrollable area. use flexGrow so the content container can expand
+    // and vertically center the empty state. Add bottom padding so the
+    // message remains visible above the FAB.
     emptyContainer: {
-      flex: 1,
+      flexGrow: 1,
       justifyContent: "center",
+      paddingBottom: 120,
     },
     emptyState: {
       alignItems: "center",
-      paddingVertical: 64,
-      paddingHorizontal: 32,
+      paddingVertical: 32,
+      paddingHorizontal: 24,
     },
     emptyIcon: {
       fontSize: 64,
