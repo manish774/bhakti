@@ -15,7 +15,9 @@
       ],
       "core.pujaDescription": {
         "lastDate": "22-10-2025",
-        "description": ""
+        "description": "",
+        "pujaName": "Name of puja to be performed",
+        "metadata": ""
       },
       "core.benifits": [
         {
@@ -26,7 +28,7 @@
       "core.temple": {
         "name": "Anjanadri Temple",
         "location": "Anjanadri Hills, Kishkinda",
-        "image": "",
+        "image": "anjanadri.webp",
         "packages": [
           {
             "id": "hanuman_single",
@@ -119,7 +121,7 @@
       "core.temple": {
         "name": "Kolhapur Mahalaxmi Temple",
         "location": "Kolhapur",
-        "image": "",
+        "image": "kolhapurMahalaxmi.jpg",
         "packages": [
           {
             "id": "mahalaxmi_single",
@@ -209,7 +211,7 @@
       "core.temple": {
         "name": "Dattatraya Temple",
         "location": "Ghanagapur",
-        "image": "",
+        "image": "Gaangapur.jpg",
         "packages": [
           {
             "id": "dattatraya_single",
@@ -299,7 +301,7 @@
       "core.temple": {
         "name": "Tuljapur Ambha Bhavani Temple",
         "location": "Tuljapur",
-        "image": "",
+        "image": "shree-tulja-bhavani-temple-the-shakti-peetha-of-tuljapur-and-its-rich-historical-egacy.jpg",
         "packages": [
           {
             "id": "tuljapur_single",
@@ -389,7 +391,7 @@
       "core.temple": {
         "name": "Raghavendra Swami Temple",
         "location": "Mantralayam",
-        "image": "",
+        "image": "swamiRaghvendraTemple.jpeg",
         "packages": [
           {
             "id": "raghavendra_single",
@@ -479,7 +481,7 @@
       "core.temple": {
         "name": "Raghavendra Swami Temple",
         "location": "Mantralayam",
-        "image": "",
+        "image": "swamiRaghvendraTemple.jpeg",
         "packages": [
           {
             "id": "raghavendra_maha_single",
@@ -536,7 +538,8 @@
         "prasadDelivery": {
           "included": false,
           "deliveryTime": "N/A",
-          "prasadCharge": 0
+          "prasadCharge": 560,
+          "deliveryCharge": "200"
         },
         "pandit": {
           "name": "Experienced Pandit",

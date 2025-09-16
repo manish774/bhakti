@@ -1,6 +1,7 @@
+import { useTheme } from "@/context/ThemeContext";
 import React from "react";
-import { Button, Modal, StyleSheet, View } from "react-native";
-import { Card } from "react-native-paper";
+import { Modal, StyleSheet, View } from "react-native";
+import { Button, Card } from "react-native-paper";
 
 interface ModelProps {
   isVisible: boolean;
@@ -21,6 +22,8 @@ export default function Model(props: ModelProps) {
     content,
   } = props;
 
+  const { theme } = useTheme();
+
   return (
     <Modal
       visible={isVisible}
@@ -34,7 +37,12 @@ export default function Model(props: ModelProps) {
             <Card.Title title={title} />
             <Card.Content>{content}</Card.Content>
             <Card.Actions>
-              <Button title="Close" onPress={onRequestClose} />
+              <Button
+                onPress={onRequestClose}
+                style={{ backgroundColor: theme.background }}
+              >
+                Close
+              </Button>
             </Card.Actions>
           </Card>
         </View>

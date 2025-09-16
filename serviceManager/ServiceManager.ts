@@ -20,6 +20,8 @@ export interface TempleMetadata {
   [Core.PujaDescription]: {
     lastDate: string;
     description: string;
+    pujaName: string;
+    metadata: string;
   };
   [Core.StartPrice]: number;
   [Core.Benifits]: {
@@ -42,6 +44,7 @@ export interface TempleMetadata {
       included: boolean;
       deliveryTime: string;
       prasadCharge: number;
+      deliveryCharge: number;
     };
     pandit: {
       name: string;

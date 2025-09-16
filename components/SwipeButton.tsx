@@ -1,14 +1,13 @@
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useMemo, useState } from "react";
-import { StyleSheet } from "react-native";
+import { Dimensions, StyleSheet } from "react-native";
 
-import { PanGestureHandler } from "react-native-gesture-handler";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   Extrapolate,
   interpolate,
   interpolateColor,
   runOnJS,
-  useAnimatedGestureHandler,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -16,7 +15,7 @@ import Animated, {
 
 import { useTheme } from "../context/ThemeContext";
 
-const BUTTON_WIDTH = 360;
+const BUTTON_WIDTH = Dimensions.get("window").width * 0.85;
 const BUTTON_HEIGHT = 80;
 const BUTTON_PADDING = 10;
 const SWIPEABLE_DIMENSIONS = BUTTON_HEIGHT - 2 * BUTTON_PADDING;
@@ -50,7 +49,7 @@ const SwipeButton: React.FC<SwipeButtonProps> = ({
           justifyContent: "center",
           alignItems: "center",
           flexDirection: "row",
-          borderWidth: 2,
+          borderWidth: 1,
           borderColor: theme.cardBorder,
         },
         colorWave: {
@@ -101,37 +100,34 @@ const SwipeButton: React.FC<SwipeButtonProps> = ({
     onToggle(isToggled);
   };
 
-  // Gesture Handler Events
-  const animatedGestureHandler = useAnimatedGestureHandler({
-    onStart: (_, ctx) => {
-      ctx.completed = toggled;
-      // lift/scale up the knob a bit when the user starts touching
-      S.value = withSpring(1.06, { damping: 12, stiffness: 180 });
-    },
-    onActive: (e, ctx) => {
-      let newValue;
-      if (ctx.completed) {
-        newValue = H_SWIPE_RANGE + e.translationX;
-      } else {
-        newValue = e.translationX;
-      }
-
-      if (newValue >= 0 && newValue <= H_SWIPE_RANGE) {
-        X.value = newValue;
-      }
-    },
-    onEnd: () => {
-      // release scale back to normal
-      S.value = withSpring(1, { damping: 12, stiffness: 200 });
-      if (X.value < BUTTON_WIDTH / 2 - SWIPEABLE_DIMENSIONS / 2) {
-        X.value = withSpring(0);
-        runOnJS(handleComplete)(false);
-      } else {
-        X.value = withSpring(H_SWIPE_RANGE);
-        runOnJS(handleComplete)(true);
-      }
-    },
-  });
+  // Gesture Handler Events (Reanimated v3+)
+  const panGesture = useMemo(() => {
+    return Gesture.Pan()
+      .onBegin(() => {
+        S.value = withSpring(1.06, { damping: 12, stiffness: 180 });
+      })
+      .onUpdate((e) => {
+        let newValue;
+        if (toggled) {
+          newValue = H_SWIPE_RANGE + e.translationX;
+        } else {
+          newValue = e.translationX;
+        }
+        if (newValue >= 0 && newValue <= H_SWIPE_RANGE) {
+          X.value = newValue;
+        }
+      })
+      .onEnd(() => {
+        S.value = withSpring(1, { damping: 12, stiffness: 200 });
+        if (X.value < BUTTON_WIDTH / 2 - SWIPEABLE_DIMENSIONS / 2) {
+          X.value = withSpring(0);
+          runOnJS(handleComplete)(false);
+        } else {
+          X.value = withSpring(H_SWIPE_RANGE);
+          runOnJS(handleComplete)(true);
+        }
+      });
+  }, [toggled]);
 
   const InterpolateXInput = [0, H_SWIPE_RANGE];
   const AnimatedStyles = {
@@ -222,13 +218,13 @@ const SwipeButton: React.FC<SwipeButtonProps> = ({
         start={{ x: 0.0, y: 0.5 }}
         end={{ x: 1, y: 0.5 }}
       />
-      <PanGestureHandler onGestureEvent={animatedGestureHandler}>
+      <GestureDetector gesture={panGesture}>
         <Animated.View style={[styles.swipeable, AnimatedStyles.swipeable]}>
           <Animated.Text style={[styles.swipeIcon, AnimatedStyles.icon]}>
             »»
           </Animated.Text>
         </Animated.View>
-      </PanGestureHandler>
+      </GestureDetector>
       <Animated.Text style={[styles.swipeText, AnimatedStyles.swipeText]}>
         {label || "Swipe me"}
       </Animated.Text>

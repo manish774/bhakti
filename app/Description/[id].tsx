@@ -6,19 +6,14 @@ import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import {
-  Dimensions,
-  Image,
-  Platform,
-  ScrollView,
-  TextInput,
-  View,
-} from "react-native";
-import { Button, Chip, Divider, Text } from "react-native-paper";
+import { Dimensions, Image, Platform, ScrollView, View } from "react-native";
+import { Button, Chip, Divider, Snackbar, Text } from "react-native-paper";
 import { useTheme } from "../../context/ThemeContext";
 import rawJson from "../Data/raw.json";
+
+import { imageMap } from "../utils/utils";
+import { PackageForm, PrasadamForm } from "./DescriptionUtils";
 import { styles as createStyles } from "./Styles";
-import { openWhatsApp } from "./utils";
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
 const maxWidth = isWeb ? 800 : screenWidth;
@@ -41,8 +36,13 @@ export default function Description() {
   const [selectedDevoteeType, setSelectedDevoteeType] = useState<string>();
   // const [popularDevoteeType, setPopularDevoteeType] = useState<string>();
   const [showModel, setShowModel] = useState<boolean>(false);
-  const [userEmail, setUserEmail] = useState<string>("");
-  const [userPhone, setUserPhone] = useState<string>("");
+  const [showPrasadamModel, setShowPrasadamModel] = useState<boolean>(false);
+  const [isFormCompleted, setIsFormCompleted] = useState<boolean>(false);
+  const [isPrasadamFormCompleted, setIsPrasadamFormCompleted] =
+    useState<boolean>(false);
+  const [snackVisible, setSnackVisible] = useState(false);
+  const [snackMessage, setSnackMessage] = useState<string>("");
+
   //alert(JSON.stringify(params));
   const item = rawJson.data.find((d: any) => d?.[Core.id] === idParam);
   const { theme } = useTheme();
@@ -54,7 +54,6 @@ export default function Description() {
     if (!packages || !Array.isArray(packages)) {
       return [];
     }
-
     return packages;
   }, [item]);
 
@@ -64,66 +63,6 @@ export default function Description() {
     }
   }, [navigation]);
 
-  const userForm = () => {
-    return (
-      <View>
-        <TextInput
-          value={userEmail}
-          onChangeText={setUserEmail}
-          keyboardType={"name-phone-pad"}
-          placeholder={"Name"}
-          placeholderTextColor={`${theme.text}99`}
-          style={[
-            styles.input,
-            {
-              backgroundColor: theme.card,
-              color: theme.text,
-              borderColor: theme.cardBorder,
-              borderWidth: 1,
-              padding: 12,
-              borderRadius: 8,
-            },
-          ]}
-        />
-        <TextInput
-          value={userPhone}
-          onChangeText={setUserPhone}
-          keyboardType={"number-pad"}
-          placeholder={"Phone number"}
-          placeholderTextColor={`${theme.text}99`}
-          style={[
-            styles.input,
-            {
-              backgroundColor: theme.card,
-              color: theme.text,
-              borderColor: theme.cardBorder,
-              borderWidth: 1,
-              padding: 12,
-              borderRadius: 8,
-            },
-          ]}
-        />
-
-        <Button
-          mode="contained"
-          onPress={() => {
-            openWhatsApp({
-              name: userEmail,
-              userPhone: userPhone,
-              selectedDevoteeType,
-              item,
-            }); // Placeholder submit action — replace with real logic
-
-            setTimeout(() => setShowModel(false), 100);
-          }}
-          style={[styles.button, { backgroundColor: theme.button }]}
-          labelStyle={{ color: theme.buttonText, fontWeight: "700" }}
-        >
-          Continue
-        </Button>
-      </View>
-    );
-  };
   if (!item) {
     return (
       <View style={styles.errorContainer}>
@@ -168,18 +107,14 @@ export default function Description() {
           {item?.[Core.Temple].image ? (
             <View style={styles.imageContainer}>
               <Image
-                source={
-                  typeof item?.[Core.Temple].image === "string"
-                    ? { uri: item?.[Core.Temple].image }
-                    : item?.[Core.Temple].image
-                }
+                source={imageMap?.[item?.[Core.Temple].image]}
                 style={styles.heroImage}
                 resizeMode="cover"
               />
             </View>
           ) : (
-            <View style={styles.placeholderContainer}>
-              <Text style={styles.placeholderIcon}>🏛️</Text>
+            <View style={styles.imageContainer}>
+              <Text>test image</Text>
             </View>
           )}
         </LinearGradient>
@@ -221,9 +156,7 @@ export default function Description() {
               <View style={styles.infoCard}>
                 <Text style={styles.infoIcon}>💰</Text>
                 <Text style={styles.infoLabel}>Starting From</Text>
-                <Text style={styles.infoValue}>
-                  ₹{item?.[Core.StartPrice].toLocaleString("en-IN")}
-                </Text>
+                <Text style={styles.infoValue}>₹{item?.[Core.StartPrice]}</Text>
               </View>
 
               <View style={styles.infoCard}>
@@ -265,6 +198,7 @@ export default function Description() {
               plans={transformedPlans}
               selectedPlan={selectedDevoteeType}
               onPlanSelect={(planId: string) => {
+                setIsFormCompleted(true);
                 setSelectedDevoteeType(planId);
                 VibrationManager.selection();
               }}
@@ -340,18 +274,44 @@ export default function Description() {
             </View>
           )}
 
+          {
+            <View style={styles.section}>
+              <View style={styles.deliveryCard}>
+                <Text style={styles.deliveryLabel}>
+                  Want to Book prasad only ?
+                </Text>
+                <Button
+                  mode={"contained-tonal"}
+                  onPress={() => {
+                    VibrationManager.selection();
+                    setTimeout(() => setShowPrasadamModel(true), 300);
+                  }}
+                  style={styles.fixedBookButton}
+                  contentStyle={[styles.fixedButtonContent]}
+                  labelStyle={styles.fixedBookButtonText}
+                >
+                  Get prasadam
+                </Button>
+              </View>
+            </View>
+          }
+
           {/* Spacer to prevent content from being hidden behind fixed button */}
           <View style={styles.bottomSpacer} />
         </View>
       </ScrollView>
-
-      {/* Fixed Bottom Button */}
       <View>
         <Button
           mode="contained"
           onPress={() => {
-            VibrationManager.selection();
-            setShowModel(true);
+            if (isFormCompleted) {
+              VibrationManager.selection();
+              setTimeout(() => setShowModel(true), 300);
+            } else {
+              VibrationManager.error();
+              setSnackMessage("Please select a package to continue");
+              setSnackVisible(true);
+            }
           }}
           style={styles.fixedBookButton}
           contentStyle={styles.fixedButtonContent}
@@ -362,7 +322,19 @@ export default function Description() {
       </View>
       {
         <Model
-          content={<View>{userForm()}</View>}
+          content={
+            <View>
+              <PackageForm
+                pujaName="meng"
+                nos={2}
+                isFormCompleted
+                setShowModel={setShowModel}
+                templeName={item?.["core.temple"]?.name}
+                amount="1000"
+                lastDate={item?.["core.pujaDescription"]?.lastDate}
+              />
+            </View>
+          }
           isVisible={showModel}
           onRequestClose={() => {
             setShowModel(false);
@@ -370,6 +342,42 @@ export default function Description() {
           title={"Fill details"}
         />
       }
+      {
+        <Model
+          content={
+            <PrasadamForm
+              isFormCompleted
+              setShowModel={setShowPrasadamModel}
+              templeName={item?.["core.temple"]?.name}
+              amount={item?.[
+                "core.temple"
+              ].prasadDelivery?.prasadCharge?.toString()}
+              nos={1}
+              lastDate={item?.["core.pujaDescription"].lastDate}
+              pujaName={item?.["core.pujaDescription"].pujaName || ""}
+            />
+          }
+          isVisible={showPrasadamModel}
+          onRequestClose={() => {
+            setShowPrasadamModel(false);
+          }}
+          title={"Fill details"}
+        />
+      }
+      <Snackbar
+        visible={snackVisible}
+        onDismiss={() => setSnackVisible(false)}
+        action={{
+          label: "OK",
+          onPress: () => {
+            setSnackVisible(false);
+          },
+        }}
+        duration={3000}
+        style={{ backgroundColor: theme.background }}
+      >
+        <Text style={{ color: theme.text }}>{snackMessage}</Text>
+      </Snackbar>
     </View>
   );
 }

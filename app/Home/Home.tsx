@@ -19,7 +19,6 @@ import {
   ActivityIndicator,
   Card,
   Chip,
-  FAB,
   Searchbar,
   Text,
 } from "react-native-paper";
@@ -27,6 +26,7 @@ import SplashScreen from "../../components/SplashScreen";
 import { useTheme } from "../../context/ThemeContext";
 import rawJson from "../Data/raw.json";
 import { createStyles } from "../styles";
+import { imageMap } from "../utils/utils";
 
 const { width: screenWidth } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
@@ -238,7 +238,7 @@ export default function Home() {
                 {item?.[Core.Temple].image ? (
                   <>
                     <Image
-                      source={{ uri: item?.[Core.Temple].image }}
+                      source={imageMap[item?.[Core.Temple].image]}
                       style={styles.cardImage}
                       resizeMode="cover"
                     />
@@ -294,7 +294,6 @@ export default function Home() {
                   </View>
                 </View>
 
-                {/* Price Section */}
                 <View style={styles.priceSection}>
                   <Text style={styles.priceLabel}>Starting from</Text>
                   <Text style={styles.priceValue}>
@@ -313,7 +312,7 @@ export default function Home() {
                 {/* Swipe Button */}
                 <View style={styles.swipeSection}>
                   <SwipeButton
-                    label="Swipe to Book"
+                    label="Swipe to Continue"
                     onToggle={(isToggled) => {
                       if (isToggled) {
                         handleBooking(item);
@@ -464,7 +463,7 @@ export default function Home() {
         extraData={`${visibleCount}-${searchQuery}-${isLoading}`}
       />
 
-      <FAB
+      {/* <FAB
         icon="filter-variant"
         style={styles.fab}
         onPress={() => {
@@ -472,7 +471,7 @@ export default function Home() {
           console.log("Filter pressed");
         }}
         color="#ffffff"
-      />
+      /> */}
     </View>
   );
 }

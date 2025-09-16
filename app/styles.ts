@@ -16,8 +16,8 @@ export const createStyles = (theme: any) => {
       marginBottom: 16,
     },
     headerGradient: {
-      paddingTop: Platform.OS === "ios" ? 60 : 40,
-      paddingBottom: 32,
+      paddingTop: 35,
+      paddingBottom: 16,
       paddingHorizontal: 24,
       alignItems: "center",
     },
@@ -41,19 +41,22 @@ export const createStyles = (theme: any) => {
     // Search
     searchContainer: {
       paddingHorizontal: 20,
-      paddingTop: 16,
-      paddingBottom: 8,
+      paddingTop: 8,
+      paddingBottom: 0,
     },
     searchBar: {
       backgroundColor: theme.card,
       borderRadius: 25,
-      elevation: 4,
+      elevation: 6,
       shadowColor: theme.text,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 8,
-      borderWidth: 2,
-      borderColor: theme.cardBorder,
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.12,
+      shadowRadius: 12,
+      // remove hard border to favor a soft neumorphic shadow
+      ...(isWeb && {
+        boxShadow:
+          "0 10px 20px rgba(0,0,0,0.08), -6px -6px 12px rgba(255,255,255,0.02)",
+      }),
     },
     searchInput: {
       fontSize: 16,
@@ -97,7 +100,7 @@ export const createStyles = (theme: any) => {
       shadowRadius: 12,
       backgroundColor: theme.card,
       overflow: "hidden",
-      borderWidth: 2,
+      // borderWidth: 2,
       borderColor: theme.cardBorder,
       ...(isWeb && {
         borderRadius: 24,
@@ -125,8 +128,15 @@ export const createStyles = (theme: any) => {
       backgroundColor: theme.background,
       justifyContent: "center",
       alignItems: "center",
-      borderBottomWidth: 2,
-      borderBottomColor: theme.cardBorder,
+      // replace thin bottom border with a soft shadow to separate image area
+      elevation: 2,
+      shadowColor: theme.text,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.06,
+      shadowRadius: 6,
+      ...(isWeb && {
+        boxShadow: "inset 0 -6px 12px rgba(0,0,0,0.04)",
+      }),
     },
     placeholderText: {
       fontSize: 48,
@@ -142,18 +152,24 @@ export const createStyles = (theme: any) => {
     imageContent: {
       position: "absolute",
       top: 12,
-      right: 12,
+      right: 5,
     },
     dateChip: {
-      backgroundColor: "rgba(255,255,255,0.95)",
-      borderColor: theme.accent,
-      borderWidth: 2,
-      elevation: 3,
+      backgroundColor: "rgba(255, 255, 255, 0.08)",
+      // subtle raised look instead of a 1px border
+      elevation: 2,
+      shadowColor: theme.accent,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 6,
+      ...(isWeb && {
+        boxShadow: `0 4px 10px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.02)`,
+      }),
     },
     dateChipText: {
       color: theme.accent,
       fontWeight: "700",
-      fontSize: 12,
+      fontSize: 8,
     },
 
     // Content Section
@@ -200,19 +216,22 @@ export const createStyles = (theme: any) => {
     priceSection: {
       backgroundColor: theme.background,
       borderRadius: 16,
-      padding: 16,
-      marginBottom: 16,
-      borderWidth: 2,
-      borderColor: theme.cardBorder,
+      padding: 8,
+      marginBottom: 8,
+      // replaced the hard border with a soft, elevated shadow for neumorphism
       alignItems: "center",
+      elevation: 6,
       shadowColor: theme.text,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 2,
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.12,
+      shadowRadius: 16,
+      ...(isWeb && {
+        boxShadow:
+          "6px 6px 20px rgba(0,0,0,0.06), -6px -6px 20px rgba(255,255,255,0.02)",
+      }),
     },
     priceLabel: {
-      fontSize: 13,
+      fontSize: 10,
       color: theme.text,
       fontWeight: "600",
       marginBottom: 4,
@@ -226,9 +245,15 @@ export const createStyles = (theme: any) => {
     },
     prasadChip: {
       backgroundColor: theme.button,
-      borderColor: theme.accent,
-      borderWidth: 1,
-      elevation: 2,
+      // soft shadow instead of a 1px border
+      elevation: 4,
+      shadowColor: theme.accent,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.12,
+      shadowRadius: 8,
+      ...(isWeb && {
+        boxShadow: "0 6px 14px rgba(0,0,0,0.08)",
+      }),
     },
     prasadChipText: {
       color: theme.buttonText,
