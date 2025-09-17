@@ -1,13 +1,18 @@
 import React from "react";
 import { View } from "react-native";
 import { Button } from "react-native-paper";
-type FormGroup = {
-  children: React.ReactNode;
+type stepsProps = {
+  id: string;
+  isValid: boolean;
+  content: React.ReactNode;
 };
-const FormGroup = ({ children }: FormGroup) => {
+// type FormGroup = {
+//   steps:
+// };
+
+const FormGroup = ({ steps }) => {
   return (
     <View>
-      {children}
       <Button>Submit</Button>
     </View>
   );

@@ -1,4 +1,5 @@
 import FlowerRain from "@/components/FlowerRain";
+import Stepper from "@/components/stepper/Stepper";
 import SwipeButton from "@/components/SwipeButton";
 import { Core, TempleMetadata } from "@/serviceManager/ServiceManager";
 import { VibrationManager } from "@/utils/Vibrate";
@@ -431,8 +432,8 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
+      <Stepper />
       <StatusBar backgroundColor={theme.background} barStyle="dark-content" />
-
       <FlatList
         ref={flatListRef}
         data={visibleData}
