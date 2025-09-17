@@ -1,10 +1,11 @@
+import { styles } from "@/app/Description/Styles";
 import { VibrationManager } from "@/utils/Vibrate";
 import React, { useMemo, useState } from "react";
 import { StyleSheet, TextInput, View } from "react-native";
 import { FAB, Text } from "react-native-paper";
 import { useTheme } from "../../context/ThemeContext";
 
-type FormProps = {
+export type FormProps = {
   name: string;
   type: string;
   placeholder?: string;
@@ -17,87 +18,18 @@ type FormProps = {
 
 type IStepper = {
   name: string;
-  content: React.ReactNode;
   visible: boolean;
   isValid: (props: any) => boolean;
   formProps?: FormProps[];
   descriptionForm?: string | null;
 };
 
-const Stepper = () => {
-  const [steps, setSteps] = useState<IStepper[]>([
-    {
-      name: "step1",
-      content: <Text>Heheh</Text>,
-      visible: true,
-      isValid: (props: FormProps[]): boolean => {
-        return !props.every((x) => x.value !== "");
-      },
-      formProps: [
-        {
-          id: 1,
-          name: "name",
-          type: "text",
-          placeholder: "Enter your name",
-          mandatory: true,
-          minLength: 2,
-          value: "",
-        },
-        {
-          id: 2,
-          name: "password",
-          type: "password",
-          placeholder: "Enter password.",
-          mandatory: true,
-          minLength: 6,
-          value: "",
-        },
-      ],
-      descriptionForm: null,
-    },
-    {
-      name: "step2",
-      content: <Text>most</Text>,
-      visible: false,
-      isValid: (props: FormProps[]): boolean => {
-        return !props.every((x) => x.value !== "");
-      },
-      formProps: [
-        {
-          id: 3,
-          name: "email",
-          type: "email",
-          placeholder: "Enter your email",
-          mandatory: true,
-          value: "",
-        },
-        {
-          id: 4,
-          name: "phone",
-          type: "phone",
-          placeholder: "Enter phone number",
-          mandatory: false,
-          maxLength: 10,
-          value: "",
-        },
-      ],
-      descriptionForm: null,
-    },
-    {
-      name: "step3",
-      content: <Text>Hello</Text>,
-      visible: false,
-      isValid: (props: any): boolean => {
-        return true;
-      },
-      descriptionForm: "Final step description",
-    },
-  ]);
+const Stepper = ({ steps: newSteps }: { steps: IStepper[] }) => {
+  const [steps, setSteps] = useState(newSteps);
 
-  const [currentStep, setCurrentStep] = useState(steps[0]);
+  const [currentStep, setCurrentStep] = useState(newSteps[0]);
 
-  const theme = useTheme();
-  const shouldAllVisible = false;
+  const { theme } = useTheme();
 
   const stepLength = useMemo(
     () => steps.filter((x) => x.visible).length - 1,
@@ -224,7 +156,7 @@ const Stepper = () => {
               VibrationManager.stop();
               onAdd();
             }}
-            color="#ffffff"
+            color={theme.buttonText || "#ffffff"}
             size="small"
             disabled={currentStep?.isValid(currentStep.formProps)}
           />
@@ -237,7 +169,10 @@ const Stepper = () => {
 
 const createStyles = (theme: any) =>
   StyleSheet.create({
+    ...styles,
     container: {
+      flex: 1,
+      backgroundColor: theme.background,
       paddingHorizontal: 16,
       paddingVertical: 8,
     },
@@ -256,36 +191,54 @@ const createStyles = (theme: any) =>
       width: 24,
       height: 24,
       borderRadius: 12,
-      backgroundColor: theme.primary || "#007AFF",
+      backgroundColor: theme.button || "#007AFF",
       marginRight: 16,
       zIndex: 1,
+      elevation: 4,
+      shadowColor: theme.text,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.15,
+      shadowRadius: 8,
     },
     connectingLine: {
-      position: "absolute",
+      position: "static",
       top: 24,
       width: 2,
       height: "100%",
-      backgroundColor: theme.primary || "#007AFF",
+      backgroundColor: theme.button || "#007AFF",
       left: 11,
+      opacity: 0.6,
     },
     contentWrapper: {
       flex: 1,
       minHeight: 60,
-      paddingVertical: 12,
-      paddingHorizontal: 12,
-      backgroundColor: theme.surface || "#f8f9fa",
-      borderRadius: 8,
-      borderLeftWidth: 3,
-      borderLeftColor: theme.primary || "#ff7b00ff",
+      paddingVertical: 16,
+      paddingHorizontal: 20,
+      backgroundColor: theme.card || "#f8f9fa",
+      borderRadius: 16,
+      borderColor: theme.cardBorder,
       marginBottom: 16,
+      elevation: 6,
+      shadowColor: theme.text,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
+      shadowRadius: 12,
     },
     formInput: {
       borderWidth: 1,
-      borderColor: "#ccc",
-      padding: 10,
-      borderRadius: 6,
+      borderColor: theme.cardBorder || "#ccc",
+      backgroundColor: theme.background,
+      color: theme.text,
+      padding: 12,
+      borderRadius: 12,
       marginVertical: 6,
       height: 50,
+      fontSize: 16,
+      elevation: 2,
+      shadowColor: theme.text,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 6,
     },
     descriptionContainer: {
       padding: 8,
@@ -294,17 +247,21 @@ const createStyles = (theme: any) =>
       fontSize: 16,
       color: theme.text || "#333333",
       lineHeight: 24,
+      fontWeight: "500",
     },
     placeholderContainer: {
       flex: 1,
       padding: 16,
       alignItems: "center",
       justifyContent: "center",
+      backgroundColor: theme.card,
+      borderRadius: 12,
     },
     placeholderText: {
       fontSize: 14,
-      color: theme.textSecondary || "#666666",
+      color: theme.text || "#666666",
       fontStyle: "italic",
+      opacity: 0.6,
     },
     stepText: {
       fontSize: 16,
@@ -313,17 +270,17 @@ const createStyles = (theme: any) =>
     },
     fabContainer: {
       alignItems: "baseline",
-      marginTop: 8,
+      marginTop: 16,
       paddingTop: 8,
     },
     addMore: {
       backgroundColor: theme.button || "#007AFF",
       borderRadius: 28,
-      elevation: 6,
+      elevation: 8,
       shadowColor: theme.text || "#000000",
-      shadowOffset: { width: 0, height: 3 },
-      shadowOpacity: 0.25,
-      shadowRadius: 6,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
       width: 56,
       height: 56,
       alignItems: "center",
