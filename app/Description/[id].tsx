@@ -1,11 +1,11 @@
 import ExpandablePlanSelector from "@/components/ExpandableSelector/ExpandableSelector";
 import Model from "@/components/Model";
-import { Core } from "@/serviceManager/ServiceManager";
+import { Core, TempleMetadata } from "@/serviceManager/ServiceManager";
 import { VibrationManager } from "@/utils/Vibrate";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Dimensions, Image, Platform, ScrollView, View } from "react-native";
 import { Button, Chip, Divider, Snackbar, Text } from "react-native-paper";
 import { useTheme } from "../../context/ThemeContext";
@@ -62,6 +62,18 @@ export default function Description() {
       navigation.setOptions({ title: "" });
     }
   }, [navigation]);
+
+  const bookPuja = useCallback(
+    (item: TempleMetadata) => {
+      VibrationManager.selection();
+      router.push(
+        `/Description/BookPuja?id=${
+          item?.[Core.id]
+        }&selectedDevotee=${selectedDevoteeType}`
+      );
+    },
+    [selectedDevoteeType]
+  );
 
   if (!item) {
     return (
@@ -306,7 +318,8 @@ export default function Description() {
           onPress={() => {
             if (isFormCompleted) {
               VibrationManager.selection();
-              setTimeout(() => setShowModel(true), 300);
+              // setTimeout(() => setShowModel(true), 300);
+              bookPuja(item);
             } else {
               VibrationManager.error();
               setSnackMessage("Please select a package to continue");
@@ -326,7 +339,7 @@ export default function Description() {
             <View>
               <PackageForm
                 pujaName="meng"
-                nos={2}
+                nos={3}
                 isFormCompleted
                 setShowModel={setShowModel}
                 templeName={item?.["core.temple"]?.name}

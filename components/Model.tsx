@@ -1,6 +1,13 @@
 import { useTheme } from "@/context/ThemeContext";
 import React from "react";
-import { Modal, StyleSheet, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 import { Button, Card } from "react-native-paper";
 
 interface ModelProps {
@@ -17,7 +24,6 @@ export default function Model(props: ModelProps) {
     isVisible,
     transparent = true,
     onRequestClose,
-
     title,
     content,
   } = props;
@@ -31,22 +37,31 @@ export default function Model(props: ModelProps) {
       animationType="slide"
       onRequestClose={onRequestClose}
     >
-      <View style={styles.modalBackground}>
+      <KeyboardAvoidingView
+        style={styles.modalBackground}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 50 : 20} // adjust if you have header
+      >
         <View style={styles.modalContent}>
-          <Card>
-            <Card.Title title={title} />
-            <Card.Content>{content}</Card.Content>
-            <Card.Actions>
-              <Button
-                onPress={onRequestClose}
-                style={{ backgroundColor: theme.background }}
-              >
-                Close
-              </Button>
-            </Card.Actions>
-          </Card>
+          <ScrollView
+            contentContainerStyle={{ paddingBottom: 16 }}
+            keyboardShouldPersistTaps="handled"
+          >
+            <Card>
+              <Card.Title title={title} />
+              <Card.Content>{content}</Card.Content>
+              <Card.Actions>
+                <Button
+                  onPress={onRequestClose}
+                  style={{ backgroundColor: theme.background }}
+                >
+                  Close
+                </Button>
+              </Card.Actions>
+            </Card>
+          </ScrollView>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -62,6 +77,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 10,
     padding: 0,
-    minWidth: 350,
+    minWidth: "90%",
+    maxHeight: 319, // scroll if content exceeds 400
   },
 });

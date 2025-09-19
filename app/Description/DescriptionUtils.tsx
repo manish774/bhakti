@@ -1,16 +1,18 @@
 import Form from "@/components/Form/Form";
-import Stepper, { FormProps } from "@/components/stepper/Stepper";
+import Stepper from "@/components/stepper/Stepper";
 import { Dispatch, SetStateAction } from "react";
+import { View } from "react-native";
+import { Text } from "react-native-paper";
 import { PrasadamProps, prasadamTemplate } from "./templets";
 import { prasadamOnlyFormProps } from "./types";
-import { openWhatsApp } from "./utils";
+import { createPackageSteps, openWhatsApp } from "./utils";
 
 interface PrasadamFormProps {
   isFormCompleted: boolean;
   setShowModel: Dispatch<SetStateAction<boolean>>;
   templeName: string;
   amount: string;
-  nos: number;
+  nos: number | undefined;
   lastDate: string;
   pujaName: string;
 }
@@ -127,131 +129,19 @@ export const PackageForm: React.FC<PrasadamFormProps> = ({
   lastDate,
   setShowModel,
   pujaName,
+  nos,
 }) => {
+  const detail = (
+    <View>
+      <Text>Temple Name: {templeName}</Text>
+      <Text>Puja Name: {pujaName}</Text>
+      <Text>Amount: {amount}</Text>
+    </View>
+  );
+
   return (
     <Form>
-      {/* {pradadamObj.map((obj) => {
-        return <Form.Input {...obj} key={obj.name} />;
-      })}
-
-      <Form.Submit
-        onPress={(e: PrasadamProps<string>) => {
-          const props: PrasadamProps<string> = {
-            userName: e.userName,
-            templetName: templeName,
-            pujaName: pujaName,
-            amount: amount,
-            lastDate: lastDate,
-            address: e.address,
-            gotra: e.gotra,
-            phone: e.phone,
-            postalCode: e.postalCode,
-          };
-
-          const detail = prasadamTemplate(props);
-          openWhatsApp({ message: detail });
-          setTimeout(() => setShowModel(false), 100);
-        }}
-      >
-        Book
-      </Form.Submit> */}
-      <Stepper
-        steps={[
-          {
-            name: "step1",
-            visible: true,
-            isValid: (props: FormProps[]): boolean => {
-              return !props.every((x) => x.value !== "");
-            },
-            formProps: [
-              {
-                id: 1,
-                name: "name",
-                type: "text",
-                placeholder: "Enter your name",
-                mandatory: true,
-                minLength: 2,
-                value: "",
-              },
-              {
-                id: 2,
-                name: "password",
-                type: "password",
-                placeholder: "Enter password.",
-                mandatory: true,
-                minLength: 6,
-                value: "",
-              },
-            ],
-            descriptionForm: null,
-          },
-          {
-            name: "step2",
-
-            visible: false,
-            isValid: (props: FormProps[]): boolean => {
-              return !props.every((x) => x.value !== "");
-            },
-            formProps: [
-              {
-                id: 3,
-                name: "email",
-                type: "email",
-                placeholder: "Enter your email",
-                mandatory: true,
-                value: "",
-              },
-              {
-                id: 4,
-                name: "phone",
-                type: "phone",
-                placeholder: "Enter phone number",
-                mandatory: false,
-                maxLength: 10,
-                value: "",
-              },
-            ],
-            descriptionForm: null,
-          },
-          {
-            name: "step3",
-
-            visible: false,
-            isValid: (props: any): boolean => {
-              return false;
-            },
-            descriptionForm: "Final step description",
-          },
-          {
-            name: "step4",
-
-            visible: false,
-            isValid: (props: FormProps[]): boolean => {
-              return !props.every((x) => x.value !== "");
-            },
-            formProps: [
-              {
-                id: 3,
-                name: "email",
-                type: "email",
-                placeholder: "Enter your email",
-                mandatory: true,
-                value: "",
-              },
-              {
-                id: 4,
-                name: "phone",
-                type: "phone",
-                placeholder: "Enter phone number",
-                mandatory: false,
-                maxLength: 10,
-                value: "",
-              },
-            ],
-            descriptionForm: null,
-          },
-        ]}
-      />
+      <Stepper steps={createPackageSteps(nos as number, detail)} />
     </Form>
   );
 };

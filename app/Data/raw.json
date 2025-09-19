@@ -33,12 +33,13 @@
           {
             "id": "hanuman_single",
             "name": "Single devotee",
+            "numberOfPerson": 1,
             "title": "Small detail about puja: best for 2 ",
             "price": 500,
             "description": [
               {
                 "id": 1,
-                "detail": "testtesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttest"
+                "detail": "testtesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttest"
               },
               {
                 "id": 2,
@@ -50,6 +51,7 @@
           {
             "id": "hanuman_two",
             "name": "Two devotee",
+            "numberOfPerson": 2,
             "title": "",
             "price": 900,
             "description": [
@@ -67,6 +69,7 @@
           {
             "id": "hanuman_four",
             "name": "Four devotee",
+            "numberOfPerson": 4,
             "title": "",
             "price": 900,
             "description": [
@@ -126,6 +129,7 @@
           {
             "id": "mahalaxmi_single",
             "name": "Single devotee",
+            "numberOfPerson": 1,
             "title": "",
             "price": 501,
             "description": [
@@ -143,6 +147,7 @@
           {
             "id": "mahalaxmi_two",
             "name": "Two devotee",
+            "numberOfPerson": 2,
             "title": "",
             "price": 801,
             "description": [
@@ -160,6 +165,7 @@
           {
             "id": "mahalaxmi_four",
             "name": "Four devotee",
+            "numberOfPerson": 4,
             "title": "",
             "price": 901,
             "description": [
@@ -216,6 +222,7 @@
           {
             "id": "dattatraya_single",
             "name": "Single devotee",
+            "numberOfPerson": 1,
             "title": "",
             "price": 501,
             "description": [
@@ -233,6 +240,7 @@
           {
             "id": "dattatraya_two",
             "name": "Two devotee",
+            "numberOfPerson": 2,
             "title": "",
             "price": 801,
             "description": [
@@ -250,6 +258,7 @@
           {
             "id": "dattatraya_four",
             "name": "Four devotee",
+            "numberOfPerson": 4,
             "title": "",
             "price": 901,
             "description": [
@@ -306,6 +315,7 @@
           {
             "id": "tuljapur_single",
             "name": "Single devotee",
+            "numberOfPerson": 1,
             "title": "",
             "price": 501,
             "description": [
@@ -323,6 +333,7 @@
           {
             "id": "tuljapur_two",
             "name": "Two devotee",
+            "numberOfPerson": 2,
             "title": "",
             "price": 801,
             "description": [
@@ -340,6 +351,7 @@
           {
             "id": "tuljapur_four",
             "name": "Four devotee",
+            "numberOfPerson": 4,
             "title": "",
             "price": 901,
             "description": [
@@ -396,6 +408,7 @@
           {
             "id": "raghavendra_single",
             "name": "Single devotee",
+            "numberOfPerson": 1,
             "title": "",
             "price": 501,
             "description": [
@@ -413,6 +426,7 @@
           {
             "id": "raghavendra_two",
             "name": "Two devotee",
+            "numberOfPerson": 2,
             "title": "",
             "price": 801,
             "description": [
@@ -430,6 +444,7 @@
           {
             "id": "raghavendra_four",
             "name": "Four devotee",
+            "numberOfPerson": 4,
             "title": "",
             "price": 901,
             "description": [
@@ -486,6 +501,7 @@
           {
             "id": "raghavendra_maha_single",
             "name": "Single devotee",
+            "numberOfPerson": 1,
             "title": "",
             "price": 501,
             "description": [
@@ -503,6 +519,7 @@
           {
             "id": "raghavendra_maha_two",
             "name": "Two devotee",
+            "numberOfPerson": 2,
             "title": "",
             "price": 801,
             "description": [
@@ -520,6 +537,7 @@
           {
             "id": "raghavendra_maha_four",
             "name": "Four devotee",
+            "numberOfPerson": 4,
             "title": "",
             "price": 901,
             "description": [

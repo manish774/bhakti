@@ -200,6 +200,19 @@ export const colorCombinations = [
     accent: "#059669",
     error: "#dc2626",
   },
+  {
+    name: "Starlit Night",
+    emoji: "🌌",
+    background: "#0f172a", // Deep navy background
+    button: "#2563eb", // Bright blue button
+    buttonText: "#ffffff", // White text on buttons
+    card: "#1e293b", // Dark slate cards
+    cardBorder: "#334155", // Subtle border
+    text: "#f8fafc", // Light text
+    accent: "#38bdf8", // Cyan accent for highlights
+    error: "#f87171", // Soft red for errors
+    dark: true, // Optional flag for dark mode
+  },
 ];
 
 export const BhaktiColors = colorCombinations[8];

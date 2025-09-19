@@ -1,36 +1,24 @@
-import { styles } from "@/app/Description/Styles";
+import { FormProps, IStepper } from "@/app/Description/types";
 import { VibrationManager } from "@/utils/Vibrate";
 import React, { useMemo, useState } from "react";
 import { StyleSheet, TextInput, View } from "react-native";
 import { FAB, Text } from "react-native-paper";
 import { useTheme } from "../../context/ThemeContext";
 
-export type FormProps = {
-  name: string;
-  type: string;
-  placeholder?: string;
-  mandatory?: boolean;
-  minLength?: number;
-  maxLength?: number;
-  value: string | number | undefined;
-  id: number;
-};
-
-type IStepper = {
-  name: string;
-  visible: boolean;
-  isValid: (props: any) => boolean;
-  formProps?: FormProps[];
-  descriptionForm?: string | null;
-};
-
-const Stepper = ({ steps: newSteps }: { steps: IStepper[] }) => {
+const Stepper = ({
+  steps: newSteps,
+  headerContent,
+  bottomContent,
+  onSubmit,
+}: {
+  steps: IStepper[];
+  headerContent?: React.ReactNode;
+  bottomContent?: React.ReactNode;
+  onSubmit?: (data: any) => any;
+}) => {
   const [steps, setSteps] = useState(newSteps);
-
   const [currentStep, setCurrentStep] = useState(newSteps[0]);
-
   const { theme } = useTheme();
-
   const stepLength = useMemo(
     () => steps.filter((x) => x.visible).length - 1,
     [steps]
@@ -61,9 +49,9 @@ const Stepper = ({ steps: newSteps }: { steps: IStepper[] }) => {
 
   const styles = createStyles(theme);
 
-  const validateStep = (value: string, name: string) => {
+  const validateStep = (value: string, name: string, mStep: IStepper) => {
     const updatedSteps = steps.map((step) => {
-      if (step.name === currentStep.name && step.formProps) {
+      if (step.name === mStep.name && step.formProps) {
         return {
           ...step,
           formProps: step.formProps.map((x) =>
@@ -78,14 +66,14 @@ const Stepper = ({ steps: newSteps }: { steps: IStepper[] }) => {
 
     // also update currentStep reference
     const updatedCurrentStep = updatedSteps.find(
-      (step) => step.name === currentStep.name
+      (step) => step.name === mStep.name
     );
     if (updatedCurrentStep) {
       setCurrentStep(updatedCurrentStep);
     }
   };
 
-  const getForms = (formProps: FormProps[]) => {
+  const getForms = (formProps: FormProps[], step: IStepper) => {
     return formProps.map((x) => {
       return (
         <TextInput
@@ -100,22 +88,26 @@ const Stepper = ({ steps: newSteps }: { steps: IStepper[] }) => {
               color: theme?.text || "#333",
             },
           ]}
-          onChangeText={(e) => validateStep(e, x.name)}
+          onChangeText={(e) => validateStep(e, x.name, step)}
         />
       );
     });
   };
 
-  const getDescriptions = (description: string) => {
-    return (
-      <View style={styles.descriptionContainer}>
-        <Text style={styles.descriptionText}>{description}</Text>
-      </View>
-    );
+  const getDescriptions = (description: string | React.ReactNode) => {
+    if (typeof description === "string") {
+      return <Text>{description}</Text>;
+    }
+    return description;
+  };
+
+  const isAllFormsValid = () => {
+    return steps.some((x) => x.isValid(x.formProps));
   };
 
   return (
     <View style={styles.container}>
+      {headerContent}
       {steps?.map(
         (step, index) =>
           step.visible && (
@@ -123,13 +115,15 @@ const Stepper = ({ steps: newSteps }: { steps: IStepper[] }) => {
               <View style={styles.stepContent}>
                 <View style={styles.indicatorWrapper}>
                   <View style={styles.stepIndicator} />
-                  {index < stepLength && <View style={styles.connectingLine} />}
+                  {index <= stepLength && (
+                    <View style={styles.connectingLine} />
+                  )}
                 </View>
                 {step?.formProps || step.descriptionForm ? (
                   <View style={styles.contentWrapper}>
                     <View style={styles.stepText}>
                       {step?.formProps
-                        ? getForms(step?.formProps)
+                        ? getForms(step?.formProps, step)
                         : step?.descriptionForm &&
                           getDescriptions(step?.descriptionForm)}
                     </View>
@@ -147,7 +141,7 @@ const Stepper = ({ steps: newSteps }: { steps: IStepper[] }) => {
       )}
 
       {/* FAB moved outside the map and below all steps */}
-      {!isAllStepsRendered && (
+      {!isAllStepsRendered ? (
         <View style={styles.fabContainer}>
           <FAB
             icon="plus"
@@ -161,20 +155,37 @@ const Stepper = ({ steps: newSteps }: { steps: IStepper[] }) => {
             disabled={currentStep?.isValid(currentStep.formProps)}
           />
         </View>
+      ) : (
+        <View style={[styles.fabContainer, styles.submitFab]}>
+          <FAB
+            icon="check"
+            style={styles.addMore}
+            color={theme.buttonText || "#ffffff"}
+            size="small"
+            disabled={isAllFormsValid()}
+            onPress={() => {
+              onSubmit(
+                steps.map((x) => {
+                  return x?.formProps || [];
+                })
+              );
+            }}
+          />
+          <Text style={styles.submitText}>Click To Complete</Text>
+        </View>
       )}
       {/* <Button onPress={onRemove}>Remove Step</Button> */}
+      {bottomContent}
     </View>
   );
 };
 
 const createStyles = (theme: any) =>
   StyleSheet.create({
-    ...styles,
     container: {
-      flex: 1,
-      backgroundColor: theme.background,
-      paddingHorizontal: 16,
-      paddingVertical: 8,
+      // backgroundColor: theme.background,
+      paddingHorizontal: 0,
+      paddingVertical: 0,
     },
     stepContainer: {
       marginBottom: 0,
@@ -201,23 +212,24 @@ const createStyles = (theme: any) =>
       shadowRadius: 8,
     },
     connectingLine: {
-      position: "static",
+      position: "absolute",
       top: 24,
       width: 2,
+      minHeight: 125,
       height: "100%",
-      backgroundColor: theme.button || "#007AFF",
+      backgroundColor: theme.button,
       left: 11,
       opacity: 0.6,
     },
     contentWrapper: {
       flex: 1,
       minHeight: 60,
-      paddingVertical: 16,
-      paddingHorizontal: 20,
+      paddingVertical: 8,
+      paddingHorizontal: 10,
       backgroundColor: theme.card || "#f8f9fa",
       borderRadius: 16,
       borderColor: theme.cardBorder,
-      marginBottom: 16,
+      marginBottom: 8,
       elevation: 6,
       shadowColor: theme.text,
       shadowOffset: { width: 0, height: 4 },
@@ -272,6 +284,7 @@ const createStyles = (theme: any) =>
       alignItems: "baseline",
       marginTop: 16,
       paddingTop: 8,
+      marginLeft: -8,
     },
     addMore: {
       backgroundColor: theme.button || "#007AFF",
@@ -281,10 +294,20 @@ const createStyles = (theme: any) =>
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.3,
       shadowRadius: 8,
-      width: 56,
-      height: 56,
+      width: 40,
+      height: 40,
       alignItems: "center",
       justifyContent: "center",
+    },
+    submitFab: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+    },
+    submitText: {
+      fontSize: 16,
+      color: theme.text || "#333",
+      fontWeight: "500",
     },
   });
 

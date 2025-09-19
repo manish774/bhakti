@@ -1,5 +1,6 @@
 import FlowerRain from "@/components/FlowerRain";
 import SwipeButton from "@/components/SwipeButton";
+import { useAuth } from "@/context/UserContext";
 import { Core, TempleMetadata } from "@/serviceManager/ServiceManager";
 import { VibrationManager } from "@/utils/Vibrate";
 import { useNavigation } from "@react-navigation/native";
@@ -27,6 +28,7 @@ import { useTheme } from "../../context/ThemeContext";
 import rawJson from "../Data/raw.json";
 import { createStyles } from "../styles";
 import { imageMap } from "../utils/utils";
+import SelectCorePujaType from "./SelectCorePujaType";
 
 const { width: screenWidth } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
@@ -116,6 +118,7 @@ export default function Home() {
   const flatListRef = useRef<FlatList>(null);
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
+  const { setCorePujaType, corePujaType } = useAuth();
 
   // Splash images to use as placeholders when item image is missing
   const splashImages = useMemo(
@@ -431,36 +434,45 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
-      <StatusBar backgroundColor={theme.background} barStyle="dark-content" />
-      <FlatList
-        ref={flatListRef}
-        data={visibleData}
-        renderItem={renderItem}
-        keyExtractor={(item) => `${item?.[Core.id]}-${searchQuery}`}
-        numColumns={numColumns}
-        ListHeaderComponent={HeaderComponent}
-        ListFooterComponent={FooterComponent}
-        ListEmptyComponent={EmptyComponent}
-        showsVerticalScrollIndicator={false}
-        onEndReached={handleEndReached}
-        onEndReachedThreshold={0.2}
-        contentContainerStyle={[
-          styles.listContainer,
-          visibleData.length === 0 &&
-            searchQuery.trim() &&
-            styles.emptyContainer,
-        ]}
-        columnWrapperStyle={numColumns > 1 ? styles.row : undefined}
-        initialNumToRender={6}
-        maxToRenderPerBatch={6}
-        windowSize={10}
-        removeClippedSubviews={false}
-        maintainVisibleContentPosition={{
-          minIndexForVisible: 0,
-          autoscrollToTopThreshold: 0,
-        }}
-        extraData={`${visibleCount}-${searchQuery}-${isLoading}`}
-      />
+      {corePujaType ? (
+        <>
+          <StatusBar
+            backgroundColor={theme.background}
+            barStyle="dark-content"
+          />
+          <FlatList
+            ref={flatListRef}
+            data={visibleData}
+            renderItem={renderItem}
+            keyExtractor={(item) => `${item?.[Core.id]}-${searchQuery}`}
+            numColumns={numColumns}
+            ListHeaderComponent={HeaderComponent}
+            ListFooterComponent={FooterComponent}
+            ListEmptyComponent={EmptyComponent}
+            showsVerticalScrollIndicator={false}
+            onEndReached={handleEndReached}
+            onEndReachedThreshold={0.2}
+            contentContainerStyle={[
+              styles.listContainer,
+              visibleData.length === 0 &&
+                searchQuery.trim() &&
+                styles.emptyContainer,
+            ]}
+            columnWrapperStyle={numColumns > 1 ? styles.row : undefined}
+            initialNumToRender={6}
+            maxToRenderPerBatch={6}
+            windowSize={10}
+            removeClippedSubviews={false}
+            maintainVisibleContentPosition={{
+              minIndexForVisible: 0,
+              autoscrollToTopThreshold: 0,
+            }}
+            extraData={`${visibleCount}-${searchQuery}-${isLoading}`}
+          />
+        </>
+      ) : (
+        <SelectCorePujaType />
+      )}
 
       {/* <FAB
         icon="filter-variant"

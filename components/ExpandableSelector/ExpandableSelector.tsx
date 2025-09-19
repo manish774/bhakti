@@ -40,7 +40,6 @@ const ExpandablePlanSelector: React.FC<ExpandablePlanSelectorProps> = ({
   const { theme } = useTheme();
   const [expandedPlan, setExpandedPlan] = useState<string | null>(null);
 
-  // Animated values per plan
   const animRef = useRef<
     Record<
       string,
@@ -52,8 +51,6 @@ const ExpandablePlanSelector: React.FC<ExpandablePlanSelectorProps> = ({
       }
     >
   >({}).current;
-
-  // animRef is a stable ref; disable exhaustive-deps check for this effect
 
   useEffect(() => {
     plans.forEach((p) => {
@@ -68,7 +65,6 @@ const ExpandablePlanSelector: React.FC<ExpandablePlanSelectorProps> = ({
     });
   }, [plans]);
 
-  // Animate helper (stable)
   const animate = useCallback(
     (id: string, expand: boolean) => {
       const v = animRef[id];
@@ -101,30 +97,8 @@ const ExpandablePlanSelector: React.FC<ExpandablePlanSelectorProps> = ({
     [animRef]
   );
 
-  // When parent changes selectedPlan, reflect expansion
-  useEffect(() => {
-    if (!selectedPlan) {
-      if (expandedPlan) {
-        animate(expandedPlan, false);
-        setExpandedPlan(null);
-      }
-      return;
-    }
-
-    if (expandedPlan && expandedPlan !== selectedPlan) {
-      animate(expandedPlan, false);
-    }
-
-    if (selectedPlan !== expandedPlan) {
-      animate(selectedPlan, true);
-      setExpandedPlan(selectedPlan);
-    }
-  }, [selectedPlan, expandedPlan, animate]);
-
-  const onPressPlan = (id: string) => {
+  const toggleExpand = (id: string) => {
     VibrationManager.lightImpact();
-    onPlanSelect(id);
-
     const was = expandedPlan === id;
     const next = was ? null : id;
 
@@ -154,6 +128,7 @@ const ExpandablePlanSelector: React.FC<ExpandablePlanSelectorProps> = ({
           : "0deg";
         const scale = vals ? vals.scale : new Animated.Value(1);
         const isSelected = selectedPlan === plan.id;
+
         return (
           <Animated.View
             key={plan.id}
@@ -170,27 +145,31 @@ const ExpandablePlanSelector: React.FC<ExpandablePlanSelectorProps> = ({
               </View>
             )}
 
-            <Pressable
-              style={styles.header}
-              onPress={() => onPressPlan(plan.id)}
-            >
+            <View style={styles.header}>
               <View style={styles.left}>
                 <Text style={styles.name}>{plan.name}</Text>
                 <Text style={styles.desc}>{plan.title}</Text>
               </View>
 
-              <View style={styles.right}>
+              <Pressable
+                style={styles.right}
+                onPress={() => onPlanSelect(plan.id)}
+              >
                 <Text style={styles.price}>
                   ₹{plan.price.toLocaleString("en-IN")}
                 </Text>
-                <Animated.Text
-                  style={[styles.chev, { transform: [{ rotate }] }]}
+                <View
+                  style={[
+                    styles.checkbox,
+                    isSelected && styles.checkboxChecked,
+                  ]}
                 >
-                  ⌄
-                </Animated.Text>
-              </View>
-            </Pressable>
+                  {isSelected && <Text style={styles.checkboxTick}>✓</Text>}
+                </View>
+              </Pressable>
+            </View>
 
+            {/* Expandable content */}
             <Animated.View
               style={[styles.expandWrap, { maxHeight: height, opacity }]}
             >
@@ -204,27 +183,18 @@ const ExpandablePlanSelector: React.FC<ExpandablePlanSelectorProps> = ({
                     <Text style={styles.rowText}>{it.detail}</Text>
                   </View>
                 ))}
-
-                <View style={{ height: 8 }} />
-
-                <Pressable
-                  style={[
-                    styles.selectBtn,
-                    isSelected && styles.selectBtnSelected,
-                  ]}
-                  onPress={() => onPlanSelect(plan.id)}
-                >
-                  <Text
-                    style={[
-                      styles.selectBtnText,
-                      isSelected && styles.selectBtnTextSelected,
-                    ]}
-                  >
-                    {isSelected ? "Selected" : "Choose This Plan"}
-                  </Text>
-                </Pressable>
               </View>
             </Animated.View>
+
+            {/* Chevron toggle */}
+            <Pressable
+              style={styles.chevWrapper}
+              onPress={() => toggleExpand(plan.id)}
+            >
+              <Animated.Text style={[styles.chev, { transform: [{ rotate }] }]}>
+                ⌄
+              </Animated.Text>
+            </Pressable>
           </Animated.View>
         );
       })}
@@ -239,21 +209,21 @@ const createStyles = (theme: any) =>
     container: { gap: 12 } as ViewStyle,
     card: {
       backgroundColor: theme.background,
-      borderRadius: 14,
-      padding: 0,
-      overflow: "hidden",
+      borderRadius: 12,
+      overflow: "visible",
       borderWidth: 2,
       borderColor: theme.cardBorder,
-      marginBottom: 10,
+      marginBottom: 15,
       elevation: 4,
       shadowColor: theme.text,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.12,
-      shadowRadius: 12,
+      shadowRadius: 10,
+      position: "relative",
     } as ViewStyle,
     selectedCard: {
       borderColor: theme.accent,
-      borderWidth: 3,
+      borderWidth: 2,
       elevation: 8,
     } as ViewStyle,
     popular: {
@@ -263,7 +233,7 @@ const createStyles = (theme: any) =>
     badge: {
       position: "absolute",
       right: 12,
-      top: -7,
+      top: -12,
       backgroundColor: theme.accent,
       paddingHorizontal: 10,
       paddingVertical: 4,
@@ -283,7 +253,10 @@ const createStyles = (theme: any) =>
       padding: 18,
     } as ViewStyle,
     left: { flex: 1, marginRight: 8 } as ViewStyle,
-    right: { alignItems: "flex-end" } as ViewStyle,
+    right: {
+      alignItems: "center",
+      justifyContent: "center",
+    } as ViewStyle,
     name: {
       fontSize: 18,
       fontWeight: "800",
@@ -301,11 +274,46 @@ const createStyles = (theme: any) =>
       color: theme.text,
       marginBottom: 6,
     } as TextStyle,
+    checkbox: {
+      width: 35,
+      height: 35,
+      borderRadius: 50,
+      borderWidth: 1,
+      borderColor: theme.cardBorder,
+      alignItems: "center",
+      justifyContent: "center",
+    } as ViewStyle,
+    checkboxChecked: {
+      borderColor: theme.accent,
+      backgroundColor: theme.accent,
+    } as ViewStyle,
+    checkboxTick: {
+      color: theme.buttonText,
+      fontWeight: "bold",
+      fontSize: 14,
+    } as TextStyle,
+    chevWrapper: {
+      position: "absolute",
+      bottom: -16, // overflows below card
+      alignSelf: "center",
+      backgroundColor: theme.card,
+      borderRadius: 20,
+      padding: 6,
+      elevation: 4,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.15,
+      shadowRadius: 4,
+      height: 40,
+      width: 40,
+      alignContent: "center",
+      alignItems: "center",
+    } as ViewStyle,
     chev: {
-      fontSize: 18,
+      fontSize: 22,
+      fontWeight: "bold",
       color: theme.text,
-      opacity: 0.6,
-      marginTop: 4,
+      opacity: 0.7,
     } as TextStyle,
     expandWrap: {
       overflow: "hidden",
@@ -313,8 +321,8 @@ const createStyles = (theme: any) =>
     } as ViewStyle,
     expandInner: {
       paddingHorizontal: isWeb ? 20 : 16,
-      paddingBottom: 18,
-      paddingTop: 12,
+      paddingBottom: 12,
+      paddingTop: 6,
     } as ViewStyle,
     divider: {
       backgroundColor: theme.cardBorder,
@@ -340,14 +348,4 @@ const createStyles = (theme: any) =>
       marginTop: 6,
     } as ViewStyle,
     rowText: { flex: 1, color: theme.text, opacity: 0.85 } as TextStyle,
-    selectBtn: {
-      backgroundColor: theme.accent,
-      paddingVertical: 12,
-      borderRadius: 12,
-      alignItems: "center",
-      marginTop: 12,
-    } as ViewStyle,
-    selectBtnSelected: { backgroundColor: theme.button } as ViewStyle,
-    selectBtnText: { color: "white", fontWeight: "800" } as TextStyle,
-    selectBtnTextSelected: { color: theme.buttonText } as TextStyle,
   });
