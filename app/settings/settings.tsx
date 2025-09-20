@@ -1,10 +1,11 @@
 import { colorCombinations } from "@/constants/Colors";
 import { useTheme } from "@/context/ThemeContext";
+import { useAuth } from "@/context/UserContext";
 import { VibrationManager } from "@/utils/Vibrate";
+import { useAuth as useClerkAuth } from "@clerk/clerk-expo";
 import React, { useEffect, useState } from "react";
 import {
   Animated,
-  Dimensions,
   Platform,
   Pressable,
   ScrollView,
@@ -15,11 +16,12 @@ import {
 } from "react-native";
 import { useToast } from "../utils/common";
 
-const { width: screenWidth } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
 
 export default function SettingsScreen() {
   const { switchTheme, theme } = useTheme();
+  const { user, isSignedIn } = useAuth();
+  const { signOut } = useClerkAuth();
   const themeIndexByname = colorCombinations.findIndex(
     (x) => x.name === theme.name
   );
@@ -38,7 +40,6 @@ export default function SettingsScreen() {
     VibrationManager.lightImpact();
   };
 
-  const numColumns = isWeb ? 3 : 2;
   const itemWidth = 20;
 
   // Example toggles/settings
@@ -82,6 +83,112 @@ export default function SettingsScreen() {
             Manage your preferences & account
           </Text>
         </View>
+
+        {/* ============ PROFILE SECTION ============ */}
+        {isSignedIn && user && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Profile</Text>
+            <View
+              style={[
+                styles.profileCard,
+                {
+                  backgroundColor: colorCombinations[selectedTheme].card,
+                  borderColor: colorCombinations[selectedTheme].cardBorder,
+                },
+              ]}
+            >
+              <View style={styles.profileHeader}>
+                <View
+                  style={[
+                    styles.avatarContainer,
+                    {
+                      backgroundColor: colorCombinations[selectedTheme].accent,
+                    },
+                  ]}
+                >
+                  <Text style={styles.avatarText}>
+                    {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+                  </Text>
+                </View>
+                <View style={styles.profileInfo}>
+                  <Text
+                    style={[
+                      styles.profileName,
+                      { color: colorCombinations[selectedTheme].text },
+                    ]}
+                  >
+                    {user.name || "User"}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.profileEmail,
+                      { color: colorCombinations[selectedTheme].text },
+                    ]}
+                  >
+                    {user.email || "No email provided"}
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.profileStats}>
+                <View style={styles.statItem}>
+                  <Text
+                    style={[
+                      styles.statValue,
+                      { color: colorCombinations[selectedTheme].accent },
+                    ]}
+                  >
+                    Active
+                  </Text>
+                  <Text
+                    style={[
+                      styles.statLabel,
+                      { color: colorCombinations[selectedTheme].text },
+                    ]}
+                  >
+                    Status
+                  </Text>
+                </View>
+                <View style={styles.statDivider} />
+                <View style={styles.statItem}>
+                  <Text
+                    style={[
+                      styles.statValue,
+                      { color: colorCombinations[selectedTheme].accent },
+                    ]}
+                  >
+                    Member
+                  </Text>
+                  <Text
+                    style={[
+                      styles.statLabel,
+                      { color: colorCombinations[selectedTheme].text },
+                    ]}
+                  >
+                    Type
+                  </Text>
+                </View>
+              </View>
+              <Pressable
+                style={[
+                  styles.logoutButton,
+                  { backgroundColor: colorCombinations[selectedTheme].accent },
+                ]}
+                onPress={async () => {
+                  try {
+                    await signOut();
+                    VibrationManager.success();
+                    showToast("Logged out successfully");
+                  } catch {
+                    VibrationManager.error();
+                    showToast("Failed to logout");
+                  }
+                }}
+              >
+                <Text style={styles.logoutButtonText}>Logout</Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
 
         {/* ============ THEME SECTION ============ */}
         <View style={styles.section}>
@@ -303,6 +410,82 @@ const styles = StyleSheet.create({
 
   section: { marginTop: 24, paddingHorizontal: 20 },
   sectionTitle: { fontSize: 18, fontWeight: "700", marginBottom: 12 },
+
+  // Profile styles
+  profileCard: {
+    padding: 20,
+    borderRadius: 16,
+    borderWidth: 2,
+    marginBottom: 8,
+  },
+  profileHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  avatarContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 16,
+  },
+  avatarText: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#fff",
+  },
+  profileInfo: {
+    flex: 1,
+  },
+  profileName: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+  profileEmail: {
+    fontSize: 14,
+    opacity: 0.7,
+  },
+  profileStats: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#00000010",
+  },
+  statItem: {
+    flex: 1,
+    alignItems: "center",
+  },
+  statValue: {
+    fontSize: 16,
+    fontWeight: "700",
+    marginBottom: 2,
+  },
+  statLabel: {
+    fontSize: 12,
+    opacity: 0.7,
+  },
+  statDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: "#00000020",
+    marginHorizontal: 16,
+  },
+  logoutButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    alignItems: "center",
+    marginTop: 16,
+  },
+  logoutButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
 
   previewCard: {
     marginBottom: 20,

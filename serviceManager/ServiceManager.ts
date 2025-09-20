@@ -44,7 +44,7 @@ export interface TempleMetadata {
       included: boolean;
       deliveryTime: string;
       prasadCharge: number;
-      deliveryCharge: number;
+      deliveryCharge?: number;
     };
     pandit: {
       name: string;

@@ -2,6 +2,7 @@ import ExpandablePlanSelector from "@/components/ExpandableSelector/ExpandableSe
 import Model from "@/components/Model";
 import { Core, TempleMetadata } from "@/serviceManager/ServiceManager";
 import { VibrationManager } from "@/utils/Vibrate";
+import { useAuth } from "@clerk/clerk-expo";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -14,20 +15,9 @@ import rawJson from "../Data/raw.json";
 import { imageMap } from "../utils/utils";
 import { PackageForm, PrasadamForm } from "./DescriptionUtils";
 import { styles as createStyles } from "./Styles";
-const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+const { width: screenWidth } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
 const maxWidth = isWeb ? 800 : screenWidth;
-interface TemplePackage {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  isPopular?: boolean;
-}
-interface TempleData {
-  packages: TemplePackage[];
-  // ... other temple properties
-}
 export default function Description() {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -38,10 +28,9 @@ export default function Description() {
   const [showModel, setShowModel] = useState<boolean>(false);
   const [showPrasadamModel, setShowPrasadamModel] = useState<boolean>(false);
   const [isFormCompleted, setIsFormCompleted] = useState<boolean>(false);
-  const [isPrasadamFormCompleted, setIsPrasadamFormCompleted] =
-    useState<boolean>(false);
   const [snackVisible, setSnackVisible] = useState(false);
   const [snackMessage, setSnackMessage] = useState<string>("");
+  const { isSignedIn } = useAuth();
 
   //alert(JSON.stringify(params));
   const item = rawJson.data.find((d: any) => d?.[Core.id] === idParam);
@@ -72,7 +61,7 @@ export default function Description() {
         }&selectedDevotee=${selectedDevoteeType}`
       );
     },
-    [selectedDevoteeType]
+    [selectedDevoteeType, router]
   );
 
   if (!item) {
@@ -316,15 +305,26 @@ export default function Description() {
         <Button
           mode="contained"
           onPress={() => {
-            if (isFormCompleted) {
-              VibrationManager.selection();
-              // setTimeout(() => setShowModel(true), 300);
-              bookPuja(item);
-            } else {
+            if (!isFormCompleted) {
               VibrationManager.error();
               setSnackMessage("Please select a package to continue");
               setSnackVisible(true);
+              return;
             }
+
+            if (!isSignedIn) {
+              VibrationManager.selection();
+              // Navigate to login screen with return path
+              router.push(
+                `/login?returnTo=/Description/BookPuja?id=${
+                  item?.[Core.id]
+                }&selectedDevotee=${selectedDevoteeType}`
+              );
+              return;
+            }
+
+            VibrationManager.selection();
+            bookPuja(item as unknown as TempleMetadata);
           }}
           style={styles.fixedBookButton}
           contentStyle={styles.fixedButtonContent}

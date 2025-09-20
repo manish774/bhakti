@@ -26,6 +26,7 @@ import {
 import SplashScreen from "../../components/SplashScreen";
 import { useTheme } from "../../context/ThemeContext";
 import rawJson from "../Data/raw.json";
+import AuthScreen from "../login";
 import { createStyles } from "../styles";
 import { imageMap } from "../utils/utils";
 import SelectCorePujaType from "./SelectCorePujaType";
@@ -87,25 +88,7 @@ function AnimatedLetters({
   );
 }
 
-interface TempleInfo {
-  name: string;
-  location: string;
-  image: string;
-  price: {
-    oneDevotee: number;
-    twoDevotees: number;
-    fourDevotees: number;
-    extraCharges: number;
-  };
-  prasadDelivery: {
-    included: boolean;
-    deliveryTime: string;
-  };
-  pandit: {
-    name: string;
-    about: string;
-  };
-}
+// Removed unused TempleInfo interface
 
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
@@ -118,7 +101,7 @@ export default function Home() {
   const flatListRef = useRef<FlatList>(null);
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
-  const { setCorePujaType, corePujaType } = useAuth();
+  const { clerkLoaded, isSignedIn, corePujaType } = useAuth();
 
   // Splash images to use as placeholders when item image is missing
   const splashImages = useMemo(
@@ -134,7 +117,7 @@ export default function Home() {
 
   // Process data once and memoize
   const allData: TempleMetadata[] = useMemo(() => {
-    const metadata: TempleMetadata[] = rawJson?.data;
+    const metadata: TempleMetadata[] = rawJson?.data as TempleMetadata[];
     if (!metadata || !Array.isArray(metadata)) {
       console.log("No data found in rawJson");
       return [];
@@ -432,9 +415,32 @@ export default function Home() {
     return <SplashScreen onFinish={() => setShowSplash(false)} />;
   }
 
+  // Show loading while Clerk is loading
+  if (!clerkLoaded) {
+    return (
+      <View
+        style={[
+          styles.container,
+          { justifyContent: "center", alignItems: "center" },
+        ]}
+      >
+        <ActivityIndicator size="large" color={theme.accent} />
+      </View>
+    );
+  }
+
+  console.log(isSignedIn, "lllllll");
   return (
     <View style={styles.container}>
-      {corePujaType ? (
+      {!isSignedIn ? (
+        <AuthScreen />
+      ) : !corePujaType ? (
+        <SelectCorePujaType
+          onSelection={(type) => {
+            console.log("Selected puja type:", type);
+          }}
+        />
+      ) : (
         <>
           <StatusBar
             backgroundColor={theme.background}
@@ -470,8 +476,6 @@ export default function Home() {
             extraData={`${visibleCount}-${searchQuery}-${isLoading}`}
           />
         </>
-      ) : (
-        <SelectCorePujaType />
       )}
 
       {/* <FAB

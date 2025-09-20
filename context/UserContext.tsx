@@ -1,10 +1,12 @@
 // AuthContext.tsx
+import { useAuth as useClerkAuth, useUser } from "@clerk/clerk-expo";
 import React, {
   createContext,
   Dispatch,
   ReactNode,
   SetStateAction,
   useContext,
+  useEffect,
   useState,
 } from "react";
 
@@ -19,6 +21,8 @@ type AuthContextType = {
   login: (userData: User) => void;
   logout: () => void;
   isLoggedIn: boolean;
+  isSignedIn: boolean;
+  clerkLoaded: boolean;
   selectedThemeIndex: number;
   setThemeIndex: (index: number) => void;
   corePujaType: string;
@@ -42,6 +46,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     undefined
   );
 
+  // Clerk hooks
+  const { isSignedIn, isLoaded: clerkLoaded } = useClerkAuth();
+  const { user: clerkUser } = useUser();
+
+  // Sync Clerk user data with local state
+  useEffect(() => {
+    if (clerkLoaded && isSignedIn && clerkUser) {
+      const userData: User = {
+        id: clerkUser.id,
+        name: clerkUser.fullName || clerkUser.firstName || "User",
+        email: clerkUser.primaryEmailAddress?.emailAddress || "",
+      };
+      setUser(userData);
+    } else if (clerkLoaded && !isSignedIn) {
+      setUser(null);
+    }
+  }, [clerkLoaded, isSignedIn, clerkUser]);
+
   const login = (userData: User) => {
     setUser(userData);
   };
@@ -57,6 +79,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         login,
         logout,
         isLoggedIn: !!user,
+        isSignedIn,
+        clerkLoaded,
         selectedThemeIndex,
         setThemeIndex,
         corePujaType,

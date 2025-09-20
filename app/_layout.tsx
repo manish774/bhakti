@@ -1,9 +1,12 @@
 import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 import { AuthProvider } from "@/context/UserContext";
 import { VibrationManager } from "@/utils/Vibrate";
+import { ClerkProvider } from "@clerk/clerk-expo";
+import { tokenCache } from "@clerk/clerk-expo/token-cache";
 import { Stack, useRouter } from "expo-router";
 import { Image, TouchableOpacity } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+
 import {
   MD3LightTheme as DefaultTheme,
   PaperProvider,
@@ -84,13 +87,15 @@ export default function RootLayout() {
   };
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <PaperProvider theme={theme}>
-        <ThemeProvider>
-          <AuthProvider>
-            <MainStack />
-          </AuthProvider>
-        </ThemeProvider>
-      </PaperProvider>
+      <ClerkProvider tokenCache={tokenCache}>
+        <PaperProvider theme={theme}>
+          <ThemeProvider>
+            <AuthProvider>
+              <MainStack />
+            </AuthProvider>
+          </ThemeProvider>
+        </PaperProvider>
+      </ClerkProvider>
     </GestureHandlerRootView>
   );
 }
