@@ -35,9 +35,9 @@ const SelectCorePujaType: React.FC<PujaTypeSelectorProps> = ({
   const pujaOptions: PujaOption[] = [
     {
       type: ICorePujaType.BOOK_PUJA,
-      title: "Book Puja ",
+      title: "Book Puja",
       description:
-        "Book a personalized recorded puja ceremony performed by a qualified priest. The ritual includes chanting of mantras and offerings with your name and gotra, and you'll receive a video recording of the full ceremony.",
+        "Personalized puja performed by a priest with your name & gotra. Includes mantra chanting and a recorded video.",
       icon: "🙏",
       color: "#FF6B6B",
       shadowColor: "#FF6B6B",
@@ -47,7 +47,7 @@ const SelectCorePujaType: React.FC<PujaTypeSelectorProps> = ({
       type: ICorePujaType.BOOK_PRASAD,
       title: "Book Prasad",
       description:
-        "Receive sacred prasad (blessed food) that has been offered during a recorded puja. It will be carefully packed and shipped to your doorstep with divine blessings.",
+        "Get sacred prasad offered during a puja, packed and delivered with divine blessings.",
       icon: "🍯",
       color: "#4ECDC4",
       shadowColor: "#4ECDC4",
@@ -67,7 +67,7 @@ const SelectCorePujaType: React.FC<PujaTypeSelectorProps> = ({
       type: ICorePujaType.BOOK_OFFLINE_PUJA,
       title: "Book Offline Puja",
       description:
-        "Arrange for a priest to visit your home or venue to perform a complete traditional puja. Includes all rituals, mantra chanting, and guidance tailored to your specific needs.",
+        "Schedule a priest to perform a full traditional puja at your home or venue.",
       icon: "🏠",
       color: "#FFA500",
       shadowColor: "#FFA500",
