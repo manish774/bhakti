@@ -15,11 +15,12 @@ import {
 } from "react-native";
 
 import { useToast } from "@/app/utils/common";
+import OTPscreen from "@/components/OTPscreen";
 import { useTheme } from "@/context/ThemeContext";
 import { VibrationManager } from "@/utils/Vibrate";
 import { useSignIn, useSignUp } from "@clerk/clerk-expo";
 import { useLocalSearchParams, useRouter } from "expo-router";
-// import { createStyles } from "./styles";
+
 const { width } = Dimensions.get("window");
 
 const AuthScreen = () => {
@@ -57,8 +58,40 @@ const AuthScreen = () => {
     confirmPassword: "",
   });
 
+  // Validation states
+  const [passwordError, setPasswordError] = useState("");
+
+  // Validation functions
+  const validatePasswords = (password: string, confirmPassword: string) => {
+    if (confirmPassword && password !== confirmPassword) {
+      setPasswordError("Passwords do not match");
+      return false;
+    } else {
+      setPasswordError("");
+      return true;
+    }
+  };
+
+  const isSignupFormValid = () => {
+    const { name, email, password, confirmPassword } = signupForm;
+    return (
+      name.trim() !== "" &&
+      email.trim() !== "" &&
+      password.trim() !== "" &&
+      confirmPassword.trim() !== "" &&
+      password === confirmPassword
+    );
+  };
+
+  const isLoginFormValid = () => {
+    const { email, password } = loginForm;
+    return email.trim() !== "" && password.trim() !== "";
+  };
+
   const switchTab = (tab: string) => {
     setActiveTab(tab);
+    // Reset validation errors when switching tabs
+    setPasswordError("");
     Animated.spring(animatedValue, {
       toValue: tab === "login" ? 0 : 1,
       useNativeDriver: false,
@@ -68,7 +101,7 @@ const AuthScreen = () => {
   };
 
   const handleLogin = async () => {
-    if (!signInLoaded) return;
+    if (!signInLoaded || !isLoginFormValid()) return;
 
     try {
       const result = await signIn.create({
@@ -81,9 +114,6 @@ const AuthScreen = () => {
         showToast("Login successful!");
 
         await setSignInActive({ session: result.createdSessionId });
-
-        // Set user data in UserContext (this will be synced automatically via useEffect)
-        // The UserContext will automatically sync with Clerk session
 
         // Navigate back to the return URL or home
         if (returnTo) {
@@ -109,7 +139,7 @@ const AuthScreen = () => {
   };
 
   const handleSignup = async () => {
-    if (!isLoaded) return;
+    if (!isLoaded || !isSignupFormValid()) return;
 
     try {
       await signUp.create({
@@ -150,10 +180,7 @@ const AuthScreen = () => {
       showToast("Please enter a valid 6-digit verification code");
       return;
     }
-
     setIsVerifying(true);
-    console.log("Verifying code:", code);
-
     try {
       const signUpAttempt = await signUp.attemptEmailAddressVerification({
         code,
@@ -162,12 +189,7 @@ const AuthScreen = () => {
       if (signUpAttempt.status === "complete") {
         VibrationManager.success();
         showToast("Email verified successfully!");
-
         await setActive({ session: signUpAttempt.createdSessionId });
-
-        // Set user data in UserContext (this will be synced automatically via useEffect)
-        // The UserContext will automatically sync with Clerk session
-
         if (returnTo) {
           router.push(returnTo as any);
         } else {
@@ -326,6 +348,11 @@ const AuthScreen = () => {
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.welcomeText}>Welcome</Text>
+            <OTPscreen
+              totalInput={8}
+              onSubmit={() => {}}
+              successMessage="yes"
+            />
             <Text style={styles.subtitleText}>
               {returnTo ? "Sign in to book your puja" : "Sign in to continue"}
             </Text>
@@ -378,7 +405,7 @@ const AuthScreen = () => {
                     />
                     <TextInput
                       style={styles.input}
-                      placeholder="Email"
+                      placeholder="Email id"
                       placeholderTextColor="#999"
                       value={loginForm.email}
                       onChangeText={(text) =>
@@ -425,12 +452,19 @@ const AuthScreen = () => {
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={styles.primaryButton}
+                    style={[
+                      styles.primaryButton,
+                      !isLoginFormValid() && styles.disabledButton,
+                    ]}
                     onPress={handleLogin}
+                    disabled={!isLoginFormValid()}
                   >
                     <LinearGradient
-                      // colors={[]}
-                      colors={[theme.accent, theme.accent]}
+                      colors={
+                        !isLoginFormValid()
+                          ? [theme.cardBorder, theme.cardBorder]
+                          : [theme.accent, theme.accent]
+                      }
                       style={styles.buttonGradient}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 0 }}
@@ -492,9 +526,14 @@ const AuthScreen = () => {
                       placeholder="Password"
                       placeholderTextColor="#999"
                       value={signupForm.password}
-                      onChangeText={(text) =>
-                        setSignupForm({ ...signupForm, password: text })
-                      }
+                      onChangeText={(text) => {
+                        const newForm = { ...signupForm, password: text };
+                        setSignupForm(newForm);
+                        // Validate passwords if confirm password is already filled
+                        if (newForm.confirmPassword) {
+                          validatePasswords(text, newForm.confirmPassword);
+                        }
+                      }}
                       secureTextEntry={!showPassword}
                     />
                     <TouchableOpacity
@@ -521,9 +560,15 @@ const AuthScreen = () => {
                       placeholder="Confirm Password"
                       placeholderTextColor="#999"
                       value={signupForm.confirmPassword}
-                      onChangeText={(text) =>
-                        setSignupForm({ ...signupForm, confirmPassword: text })
-                      }
+                      onChangeText={(text) => {
+                        const newForm = {
+                          ...signupForm,
+                          confirmPassword: text,
+                        };
+                        setSignupForm(newForm);
+                        // Validate passwords
+                        validatePasswords(newForm.password, text);
+                      }}
                       secureTextEntry={!showConfirmPassword}
                     />
                     <TouchableOpacity
@@ -544,12 +589,27 @@ const AuthScreen = () => {
                     </TouchableOpacity>
                   </View>
 
+                  {/* Password Error Message */}
+                  {passwordError ? (
+                    <View style={styles.errorContainer}>
+                      <Text style={styles.errorText}>{passwordError}</Text>
+                    </View>
+                  ) : null}
+
                   <TouchableOpacity
-                    style={styles.primaryButton}
+                    style={[
+                      styles.primaryButton,
+                      !isSignupFormValid() && styles.disabledButton,
+                    ]}
                     onPress={handleSignup}
+                    disabled={!isSignupFormValid()}
                   >
                     <LinearGradient
-                      colors={[theme.accent, theme.accent]}
+                      colors={
+                        !isSignupFormValid()
+                          ? [theme.cardBorder, theme.cardBorder]
+                          : [theme.accent, theme.accent]
+                      }
                       style={styles.buttonGradient}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 0 }}
@@ -691,6 +751,15 @@ const createStyles = (theme: any) =>
     },
     eyeIcon: {
       padding: 5,
+    },
+    errorContainer: {
+      marginBottom: 16,
+      marginTop: -12,
+    },
+    errorText: {
+      color: "#ff4444",
+      fontSize: 12,
+      marginLeft: 15,
     },
     forgotPassword: {
       alignSelf: "flex-end",

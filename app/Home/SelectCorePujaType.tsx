@@ -1,3 +1,4 @@
+import { useTheme } from "@/context/ThemeContext";
 import { ICorePujaType, useAuth } from "@/context/UserContext";
 import React, { useState } from "react";
 import {
@@ -32,6 +33,8 @@ const SelectCorePujaType: React.FC<PujaTypeSelectorProps> = ({
 }) => {
   const [selectedType, setSelectedType] = useState<ICorePujaType | null>(null);
   const { setCorePujaType } = useAuth();
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
   const pujaOptions: PujaOption[] = [
     {
       type: ICorePujaType.BOOK_PUJA,
@@ -55,7 +58,7 @@ const SelectCorePujaType: React.FC<PujaTypeSelectorProps> = ({
     },
     {
       type: ICorePujaType.BOOK_PUJA_SAMAGRI,
-      title: "Book Puja Samagri",
+      title: "Book Puja Samagri (Coming soon)",
       description:
         "Order a complete puja samagri kit that includes all essential ritual items like incense, diya, kumkum, rice, and flowers. Ideal for performing your own puja at home.",
       icon: "✨",
@@ -172,7 +175,7 @@ const SelectCorePujaType: React.FC<PujaTypeSelectorProps> = ({
             styles.confirmButton,
             {
               opacity: selectedType ? 1 : 0.5,
-              backgroundColor: selectedType ? "#2E7D32" : "#CCCCCC",
+              backgroundColor: selectedType ? theme.accent : "#CCCCCC",
             },
           ]}
           onPress={handleConfirm}
@@ -195,126 +198,127 @@ const SelectCorePujaType: React.FC<PujaTypeSelectorProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#F8F9FA",
-  },
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 30,
-  },
-  header: {
-    alignItems: "center",
-    marginBottom: 40,
-    paddingTop: 20,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#2C3E50",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  headerSubtitle: {
-    fontSize: 16,
-    color: "#7F8C8D",
-    textAlign: "center",
-    paddingHorizontal: 20,
-  },
-  optionsContainer: {
-    flex: 1,
-    justifyContent: "center",
-    marginVertical: 20,
-  },
-  optionCard: {
-    backgroundColor: "white",
-    marginVertical: 12,
-    borderRadius: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 24,
-    borderWidth: 1,
-    borderColor: "#E8E8E8",
-    // iOS Shadow
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    // Android Shadow
-    elevation: 4,
-  },
-  iconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 20,
-  },
-  iconText: {
-    fontSize: 24,
-  },
-  optionContent: {
-    flex: 1,
-  },
-  optionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#2C3E50",
-    marginBottom: 6,
-  },
-  optionDescription: {
-    fontSize: 12,
-    color: "#7F8C8D",
-    lineHeight: 15,
-  },
-  selectionIndicator: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: "#E8E8E8",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  selectedDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-  confirmButton: {
-    backgroundColor: "#2E7D32",
-    paddingVertical: 18,
-    borderRadius: 15,
-    marginVertical: 30,
-    // iOS Shadow
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    // Android Shadow
-    elevation: 3,
-  },
-  confirmButtonText: {
-    color: "white",
-    textAlign: "center",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  bottomDecoration: {
-    alignItems: "center",
-    marginTop: 20,
-  },
-  decorationText: {
-    fontSize: 16,
-    color: "#95A5A6",
-    fontWeight: "500",
-  },
-});
+const createStyles = (theme: any) =>
+  StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: "#F8F9FA",
+    },
+    container: {
+      flex: 1,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      paddingHorizontal: 20,
+      paddingTop: 20,
+      paddingBottom: 30,
+    },
+    header: {
+      alignItems: "center",
+      marginBottom: 40,
+      paddingTop: 20,
+    },
+    headerTitle: {
+      fontSize: 28,
+      fontWeight: "bold",
+      color: "#2C3E50",
+      marginBottom: 8,
+      textAlign: "center",
+    },
+    headerSubtitle: {
+      fontSize: 16,
+      color: "#7F8C8D",
+      textAlign: "center",
+      paddingHorizontal: 20,
+    },
+    optionsContainer: {
+      flex: 1,
+      justifyContent: "center",
+      marginVertical: 20,
+    },
+    optionCard: {
+      backgroundColor: "white",
+      marginVertical: 12,
+      borderRadius: 20,
+      flexDirection: "row",
+      alignItems: "center",
+      padding: 24,
+      borderWidth: 1,
+      borderColor: "#E8E8E8",
+      // iOS Shadow
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 8,
+      // Android Shadow
+      elevation: 4,
+    },
+    iconCircle: {
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: 20,
+    },
+    iconText: {
+      fontSize: 24,
+    },
+    optionContent: {
+      flex: 1,
+    },
+    optionTitle: {
+      fontSize: 20,
+      fontWeight: "bold",
+      color: "#2C3E50",
+      marginBottom: 6,
+    },
+    optionDescription: {
+      fontSize: 12,
+      color: "#7F8C8D",
+      lineHeight: 15,
+    },
+    selectionIndicator: {
+      width: 24,
+      height: 24,
+      borderRadius: 12,
+      borderWidth: 2,
+      borderColor: "#E8E8E8",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    selectedDot: {
+      width: 12,
+      height: 12,
+      borderRadius: 6,
+    },
+    confirmButton: {
+      backgroundColor: theme.background,
+      paddingVertical: 18,
+      borderRadius: 15,
+      marginVertical: 30,
+      // iOS Shadow
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+      // Android Shadow
+      elevation: 3,
+    },
+    confirmButtonText: {
+      color: "white",
+      textAlign: "center",
+      fontSize: 18,
+      fontWeight: "bold",
+    },
+    bottomDecoration: {
+      alignItems: "center",
+      marginTop: 20,
+    },
+    decorationText: {
+      fontSize: 16,
+      color: "#95A5A6",
+      fontWeight: "500",
+    },
+  });
 
 export default SelectCorePujaType;
