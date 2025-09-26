@@ -1,6 +1,5 @@
 import { ThemeProvider, useTheme } from "@/context/ThemeContext";
-import { AuthProvider } from "@/context/UserContext";
-import { VibrationManager } from "@/utils/Vibrate";
+import { AuthProvider, useAuth } from "@/context/UserContext";
 import { ClerkProvider } from "@clerk/clerk-expo";
 import { tokenCache } from "@clerk/clerk-expo/token-cache";
 import { Stack, useRouter } from "expo-router";
@@ -14,6 +13,8 @@ import {
 // Note: Home is imported in the index route; keep layout minimal.
 function MainStack() {
   const { theme } = useTheme();
+  const { clerkLoaded, isSignedIn, corePujaType } = useAuth();
+
   function Gear() {
     const router = useRouter();
     return (
@@ -23,6 +24,22 @@ function MainStack() {
           style={{ width: 30, height: 30, marginLeft: 8 }}
         />
       </TouchableOpacity>
+    );
+  }
+
+  function SelectPujaType() {
+    const router = useRouter();
+    return (
+      isSignedIn && (
+        <TouchableOpacity
+          onPress={() => router.push("/Home/SelectCorePujaType")}
+        >
+          <Image
+            source={require("@/assets/images/settings.png")}
+            style={{ width: 30, height: 30, marginLeft: 8 }}
+          />
+        </TouchableOpacity>
+      )
     );
   }
   return (
@@ -37,20 +54,9 @@ function MainStack() {
             fontWeight: "bold",
           },
           headerRight: () => {
-            return <Gear />;
+            return isSignedIn ? <Gear /> : undefined;
           },
-          headerLeft: () => (
-            <TouchableOpacity
-              onPress={() => {
-                VibrationManager.pulse();
-              }}
-            >
-              <Image
-                source={require("@/assets/gods/Hanuman.png")}
-                style={{ width: 30, height: 30, marginLeft: 8 }}
-              />
-            </TouchableOpacity>
-          ),
+          headerLeft: () => (isSignedIn ? <SelectPujaType /> : undefined),
         }}
       />
       <Stack.Screen
@@ -87,7 +93,10 @@ export default function RootLayout() {
   };
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ClerkProvider tokenCache={tokenCache}>
+      <ClerkProvider
+        tokenCache={tokenCache}
+        publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      >
         <PaperProvider theme={theme}>
           <ThemeProvider>
             <AuthProvider>

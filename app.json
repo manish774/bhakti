@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "bundleIdentifier": "com.manish774.bhakti",
+      "buildNumber": "1.0.0"
     },
     "android": {
       "adaptiveIcon": {

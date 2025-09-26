@@ -3,6 +3,7 @@ import SwipeButton from "@/components/SwipeButton";
 import { useAuth } from "@/context/UserContext";
 import { Core, TempleMetadata } from "@/serviceManager/ServiceManager";
 import { VibrationManager } from "@/utils/Vibrate";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
@@ -88,10 +89,9 @@ function AnimatedLetters({
   );
 }
 
-// Removed unused TempleInfo interface
-
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
+  const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | null>(null); // null = checking, true = first launch, false = not first launch
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [visibleCount, setVisibleCount] = useState(6);
@@ -102,6 +102,36 @@ export default function Home() {
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const { clerkLoaded, isSignedIn, corePujaType } = useAuth();
+
+  // Check if it's the first launch
+  useEffect(() => {
+    const checkFirstLaunch = async () => {
+      try {
+        const hasLaunchedBefore = await AsyncStorage.getItem(
+          "hasLaunchedBefore"
+        );
+        if (hasLaunchedBefore === null) {
+          // First launch
+          setIsFirstLaunch(true);
+          await AsyncStorage.setItem("hasLaunchedBefore", "true");
+        } else {
+          // Not first launch
+          setIsFirstLaunch(false);
+          setShowSplash(false); // Skip splash screen
+        }
+      } catch (error) {
+        console.log("Error checking first launch:", error);
+        setIsFirstLaunch(true); // Default to showing splash on error
+      }
+    };
+
+    checkFirstLaunch();
+  }, []);
+
+  // Handle splash screen finish
+  const handleSplashFinish = useCallback(() => {
+    setShowSplash(false);
+  }, []);
 
   // Splash images to use as placeholders when item image is missing
   const splashImages = useMemo(
@@ -400,6 +430,7 @@ export default function Home() {
       searchQuery: `"${searchQuery}"`,
       isLoading,
       showSplash,
+      isFirstLaunch,
     });
   }, [
     allData.length,
@@ -409,10 +440,26 @@ export default function Home() {
     searchQuery,
     isLoading,
     showSplash,
+    isFirstLaunch,
   ]);
 
-  if (showSplash) {
-    return <SplashScreen onFinish={() => setShowSplash(false)} />;
+  // Don't render anything while checking first launch status
+  if (isFirstLaunch === null) {
+    return (
+      <View
+        style={[
+          styles.container,
+          { justifyContent: "center", alignItems: "center" },
+        ]}
+      >
+        <ActivityIndicator size="large" color={theme.accent} />
+      </View>
+    );
+  }
+
+  // Show splash only on first launch
+  if (showSplash && isFirstLaunch) {
+    return <SplashScreen onFinish={handleSplashFinish} />;
   }
 
   // Show loading while Clerk is loading

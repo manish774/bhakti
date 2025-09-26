@@ -22,14 +22,16 @@ import { useToast } from "@/app/utils/common";
 import OTPscreen from "@/components/OTPscreen";
 import { useTheme } from "@/context/ThemeContext";
 import { VibrationManager } from "@/utils/Vibrate";
-import { useSignIn, useSignUp } from "@clerk/clerk-expo";
+import { useSignIn } from "@clerk/clerk-expo";
 import { useNavigation } from "@react-navigation/native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 
 const { width, height } = Dimensions.get("window");
 
-const AuthScreen = () => {
-  const [activeTab, setActiveTab] = useState("login");
+const ForgotPasswordScreen = () => {
+  const [currentStep, setCurrentStep] = useState<
+    "email" | "verification" | "reset"
+  >("email");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [animatedValue] = useState(new Animated.Value(0));
@@ -46,30 +48,17 @@ const AuthScreen = () => {
 
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
-  const [pendingVerification, setPendingVerification] = React.useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
   const navigation = useNavigation();
   const router = useRouter();
-  const params = useLocalSearchParams();
-  const returnTo = params.returnTo as string;
   const { toastVisible, toastMessage, toastAnim, showToast } = useToast();
 
-  const { isLoaded, signUp, setActive } = useSignUp();
-  const {
-    isLoaded: signInLoaded,
-    signIn,
-    setActive: setSignInActive,
-  } = useSignIn();
+  const { isLoaded, signIn } = useSignIn();
 
   // Form states
-  const [loginForm, setLoginForm] = useState({
-    email: "",
-    password: "",
-  });
-
-  const [signupForm, setSignupForm] = useState({
-    name: "",
-    email: "",
+  const [email, setEmail] = useState("");
+  const [resetForm, setResetForm] = useState({
     password: "",
     confirmPassword: "",
   });
@@ -177,90 +166,38 @@ const AuthScreen = () => {
     }
   };
 
-  const isSignupFormValid = () => {
-    const { name, email, password, confirmPassword } = signupForm;
+  const isEmailValid = () => {
+    return email.trim() !== "" && email.includes("@");
+  };
+
+  const isResetFormValid = () => {
+    const { password, confirmPassword } = resetForm;
     return (
-      name.trim() !== "" &&
-      email.trim() !== "" &&
       password.trim() !== "" &&
       confirmPassword.trim() !== "" &&
-      password === confirmPassword
+      password === confirmPassword &&
+      password.length >= 6
     );
   };
 
-  const isLoginFormValid = () => {
-    const { email, password } = loginForm;
-    return email.trim() !== "" && password.trim() !== "";
-  };
+  const handleSendResetEmail = async () => {
+    if (!isLoaded || !isEmailValid()) return;
 
-  const switchTab = (tab: string) => {
-    setActiveTab(tab);
-    setPasswordError("");
-    setFocusedInput("");
-    Animated.spring(animatedValue, {
-      toValue: tab === "login" ? 0 : 1,
-      useNativeDriver: false,
-      tension: 100,
-      friction: 8,
-    }).start();
-  };
-
-  const handleLogin = async () => {
-    if (!signInLoaded || !isLoginFormValid()) return;
-
+    setIsVerifying(true);
     try {
-      const result = await signIn.create({
-        identifier: loginForm.email,
-        password: loginForm.password,
+      // Create a password reset request
+      await signIn.create({
+        strategy: "reset_password_email_code",
+        identifier: email,
       });
 
-      if (result.status === "complete") {
-        VibrationManager.success();
-        showToast("Login successful!");
-
-        await setSignInActive({ session: result.createdSessionId });
-
-        if (returnTo) {
-          router.push(returnTo as any);
-        } else {
-          router.push("/");
-        }
-      }
-    } catch (err: any) {
-      VibrationManager.error();
-
-      let errorMessage = "Login failed. Please check your credentials.";
-      if (err?.errors?.[0]?.message) {
-        errorMessage = err.errors[0].message;
-      } else if (err?.message) {
-        errorMessage = err.message;
-      }
-
-      showToast(errorMessage);
-    }
-  };
-
-  const handleSignup = async () => {
-    if (!isLoaded || !isSignupFormValid()) return;
-
-    try {
-      await signUp.create({
-        emailAddress: signupForm.email,
-        password: signupForm.password,
-        firstName: signupForm.name,
-      });
-
-      await signUp.prepareEmailAddressVerification({
-        strategy: "email_code",
-      });
-
-      setPendingVerification(true);
       VibrationManager.success();
-      showToast("Verification code sent to your email!");
+      showToast("Password reset code sent to your email!");
+      setCurrentStep("verification");
     } catch (err: any) {
       VibrationManager.error();
 
-      let errorMessage = "Failed to create account. Please try again.";
+      let errorMessage = "Failed to send reset email. Please try again.";
       if (err?.errors?.[0]?.message) {
         errorMessage = err.errors[0].message;
       } else if (err?.message) {
@@ -268,10 +205,12 @@ const AuthScreen = () => {
       }
 
       showToast(errorMessage);
+    } finally {
+      setIsVerifying(false);
     }
   };
 
-  const onVerifyPress = async (otpArr: string[]) => {
+  const onVerifyResetCode = async (otpArr: string[]) => {
     const otp = otpArr?.join("");
     if (!isLoaded || isVerifying) return;
 
@@ -280,29 +219,22 @@ const AuthScreen = () => {
       showToast(`Please enter a valid verification code`);
       return;
     }
+
     setIsVerifying(true);
     try {
-      const signUpAttempt = await signUp.attemptEmailAddressVerification({
+      // Verify the reset code and prepare for password reset
+      const resetAttempt = await signIn.attemptFirstFactor({
+        strategy: "reset_password_email_code",
         code: otp,
       });
 
-      if (signUpAttempt.status === "complete") {
+      if (resetAttempt.status === "needs_new_password") {
         VibrationManager.success();
-        showToast("Email verified successfully!");
-        await setActive({ session: signUpAttempt.createdSessionId });
-        if (returnTo) {
-          router.push(returnTo as any);
-        } else {
-          router.push("/");
-        }
+        showToast("Code verified! Please set your new password.");
+        setCurrentStep("reset");
       } else {
         VibrationManager.error();
-
-        let errorMessage = "Verification failed. Please try again.";
-        if ((signUpAttempt as any)?.errors?.[0]?.message) {
-          errorMessage = (signUpAttempt as any).errors[0].message;
-        }
-        showToast(errorMessage);
+        showToast("Verification failed. Please try again.");
       }
     } catch (err: any) {
       VibrationManager.error();
@@ -320,19 +252,76 @@ const AuthScreen = () => {
     }
   };
 
-  const handleForgotPassword = () => {
-    router.push("/ForgotPassword");
+  const handleResetPassword = async () => {
+    if (!isLoaded || !isResetFormValid()) return;
+
+    setIsResetting(true);
+    try {
+      // Complete the password reset
+      const resetResult = await signIn.resetPassword({
+        password: resetForm.password,
+      });
+
+      if (resetResult.status === "complete") {
+        VibrationManager.success();
+        showToast(
+          "Password reset successful! You can now sign in with your new password."
+        );
+        router.push("/Home/SelectCorePujaType");
+      } else {
+        VibrationManager.error();
+        showToast("Password reset failed. Please try again.");
+      }
+    } catch (err: any) {
+      VibrationManager.error();
+
+      let errorMessage = "Failed to reset password. Please try again.";
+      if (err?.errors?.[0]?.message) {
+        errorMessage = err.errors[0].message;
+      } else if (err?.message) {
+        errorMessage = err.message;
+      }
+
+      showToast(errorMessage);
+    } finally {
+      setIsResetting(false);
+    }
   };
 
-  const tabIndicatorStyle = {
-    transform: [
-      {
-        translateX: animatedValue.interpolate({
-          inputRange: [0, 1],
-          outputRange: [0, (width - 100) / 2], // Fixed calculation
-        }),
-      },
-    ],
+  const goBack = () => {
+    if (currentStep === "email") {
+      router.back();
+    } else if (currentStep === "verification") {
+      setCurrentStep("email");
+    } else if (currentStep === "reset") {
+      setCurrentStep("verification");
+    }
+  };
+
+  const getStepTitle = () => {
+    switch (currentStep) {
+      case "email":
+        return "Reset Password";
+      case "verification":
+        return "Verify Code";
+      case "reset":
+        return "New Password";
+      default:
+        return "Reset Password";
+    }
+  };
+
+  const getStepSubtitle = () => {
+    switch (currentStep) {
+      case "email":
+        return "Enter your email to receive a reset code";
+      case "verification":
+        return "Enter the 6-digit code sent to your email";
+      case "reset":
+        return "Create a new secure password";
+      default:
+        return "";
+    }
   };
 
   useEffect(() => {
@@ -341,18 +330,16 @@ const AuthScreen = () => {
     }
   }, [navigation]);
 
-  if (pendingVerification) {
+  if (currentStep === "verification") {
     return (
       <OTPscreen
         totalInput={6}
         onSubmit={(otp) => {
-          onVerifyPress(otp);
+          onVerifyResetCode(otp);
         }}
         successMessage="yes"
         isVerifying={isVerifying}
-        goBack={() => {
-          setPendingVerification(false);
-        }}
+        goBack={goBack}
       />
     );
   }
@@ -433,6 +420,16 @@ const AuthScreen = () => {
               keyboardShouldPersistTaps="handled"
               bounces={false}
             >
+              {/* Back Button */}
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={goBack}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="arrow-back" size={24} color={theme.text} />
+                <Text style={styles.backButtonText}>Back</Text>
+              </TouchableOpacity>
+
               {/* Logo and Welcome Section */}
               <Animated.View
                 style={[
@@ -441,14 +438,11 @@ const AuthScreen = () => {
                 ]}
               >
                 <Text style={styles.appName}>Bhakti App</Text>
-                <Text style={styles.welcomeSubtitle}>
-                  {activeTab === "login"
-                    ? "Welcome back!"
-                    : "Join our spiritual journey"}
-                </Text>
+                <Text style={styles.welcomeTitle}>{getStepTitle()}</Text>
+                <Text style={styles.welcomeSubtitle}>{getStepSubtitle()}</Text>
               </Animated.View>
 
-              {/* Auth Card */}
+              {/* Reset Card */}
               <Animated.View
                 style={[styles.authCard, { transform: [{ scale: cardScale }] }]}
               >
@@ -458,67 +452,15 @@ const AuthScreen = () => {
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                 >
-                  {/* Enhanced Tab Container */}
-                  <View style={styles.tabContainer}>
-                    <Animated.View
-                      style={[styles.tabIndicator, tabIndicatorStyle]}
-                    />
-                    <TouchableOpacity
-                      style={styles.tab}
-                      onPress={() => switchTab("login")}
-                      activeOpacity={0.7}
-                    >
-                      <Ionicons
-                        name="log-in-outline"
-                        size={20}
-                        color={
-                          activeTab === "login" ? "white" : theme.text + "80"
-                        }
-                        style={styles.tabIcon}
-                      />
-                      <Text
-                        style={[
-                          styles.tabText,
-                          activeTab === "login" && styles.activeTabText,
-                        ]}
-                      >
-                        Login
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.tab}
-                      onPress={() => switchTab("signup")}
-                      activeOpacity={0.7}
-                    >
-                      <Ionicons
-                        name="person-add-outline"
-                        size={20}
-                        color={
-                          activeTab === "signup" ? "white" : theme.text + "80"
-                        }
-                        style={styles.tabIcon}
-                      />
-                      <Text
-                        style={[
-                          styles.tabText,
-                          activeTab === "signup" && styles.activeTabText,
-                        ]}
-                      >
-                        Sign Up
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-
                   {/* Form Content */}
                   <View style={styles.formContainer}>
-                    {activeTab === "login" ? (
-                      // Enhanced Login Form
+                    {currentStep === "email" ? (
+                      // Email Form
                       <View style={styles.form}>
                         <View
                           style={[
                             styles.inputContainer,
-                            focusedInput === "loginEmail" &&
-                              styles.inputFocused,
+                            focusedInput === "email" && styles.inputFocused,
                           ]}
                         >
                           <LinearGradient
@@ -529,7 +471,7 @@ const AuthScreen = () => {
                               name="mail-outline"
                               size={22}
                               color={
-                                focusedInput === "loginEmail"
+                                focusedInput === "email"
                                   ? theme.accent
                                   : theme.text
                               }
@@ -537,80 +479,17 @@ const AuthScreen = () => {
                             />
                             <TextInput
                               style={styles.input}
-                              placeholder="Enter your email"
+                              placeholder="Enter your email address"
                               placeholderTextColor="#999"
-                              value={loginForm.email}
-                              onChangeText={(text) =>
-                                setLoginForm({ ...loginForm, email: text })
-                              }
-                              onFocus={() => setFocusedInput("loginEmail")}
+                              value={email}
+                              onChangeText={setEmail}
+                              onFocus={() => setFocusedInput("email")}
                               onBlur={() => setFocusedInput("")}
                               keyboardType="email-address"
                               autoCapitalize="none"
                             />
                           </LinearGradient>
                         </View>
-
-                        <View
-                          style={[
-                            styles.inputContainer,
-                            focusedInput === "loginPassword" &&
-                              styles.inputFocused,
-                          ]}
-                        >
-                          <LinearGradient
-                            colors={["rgba(0,0,0,0.02)", "rgba(0,0,0,0.01)"]}
-                            style={styles.inputGradient}
-                          >
-                            <Ionicons
-                              name="lock-closed-outline"
-                              size={22}
-                              color={
-                                focusedInput === "loginPassword"
-                                  ? theme.accent
-                                  : theme.text
-                              }
-                              style={styles.inputIcon}
-                            />
-                            <TextInput
-                              style={styles.input}
-                              placeholder="Enter your password"
-                              placeholderTextColor="#999"
-                              value={loginForm.password}
-                              onChangeText={(text) =>
-                                setLoginForm({ ...loginForm, password: text })
-                              }
-                              onFocus={() => setFocusedInput("loginPassword")}
-                              onBlur={() => setFocusedInput("")}
-                              secureTextEntry={!showPassword}
-                            />
-                            <TouchableOpacity
-                              onPress={() => setShowPassword(!showPassword)}
-                              style={styles.eyeIcon}
-                              activeOpacity={0.7}
-                            >
-                              <Ionicons
-                                name={
-                                  showPassword
-                                    ? "eye-outline"
-                                    : "eye-off-outline"
-                                }
-                                size={22}
-                                color={theme.accent}
-                              />
-                            </TouchableOpacity>
-                          </LinearGradient>
-                        </View>
-
-                        <TouchableOpacity
-                          style={styles.forgotPassword}
-                          onPress={handleForgotPassword}
-                          activeOpacity={0.7}
-                        >
-                          <Text style={styles.forgotPasswordText}>
-                            Forgot your password?
-                          </Text>
-                        </TouchableOpacity>
 
                         <Animated.View
                           style={{ transform: [{ scale: buttonPulse }] }}
@@ -618,15 +497,15 @@ const AuthScreen = () => {
                           <TouchableOpacity
                             style={[
                               styles.primaryButton,
-                              !isLoginFormValid() && styles.disabledButton,
+                              !isEmailValid() && styles.disabledButton,
                             ]}
-                            onPress={handleLogin}
-                            disabled={!isLoginFormValid()}
+                            onPress={handleSendResetEmail}
+                            disabled={!isEmailValid() || isVerifying}
                             activeOpacity={0.8}
                           >
                             <LinearGradient
                               colors={
-                                !isLoginFormValid()
+                                !isEmailValid()
                                   ? ["#E0E0E0", "#BDBDBD"]
                                   : [theme.accent, theme.accent + "CC"]
                               }
@@ -634,99 +513,34 @@ const AuthScreen = () => {
                               start={{ x: 0, y: 0 }}
                               end={{ x: 1, y: 0 }}
                             >
-                              <Text style={styles.buttonText}>
-                                Sign In to Continue
-                              </Text>
-                              <Ionicons
-                                name="arrow-forward"
-                                size={20}
-                                color="white"
-                                style={styles.buttonIcon}
-                              />
+                              {isVerifying ? (
+                                <Text style={styles.buttonText}>
+                                  Sending Code...
+                                </Text>
+                              ) : (
+                                <>
+                                  <Text style={styles.buttonText}>
+                                    Send Reset Code
+                                  </Text>
+                                  <Ionicons
+                                    name="arrow-forward"
+                                    size={20}
+                                    color="white"
+                                    style={styles.buttonIcon}
+                                  />
+                                </>
+                              )}
                             </LinearGradient>
                           </TouchableOpacity>
                         </Animated.View>
                       </View>
                     ) : (
-                      // Enhanced Signup Form
+                      // New Password Form
                       <View style={styles.form}>
                         <View
                           style={[
                             styles.inputContainer,
-                            focusedInput === "signupName" &&
-                              styles.inputFocused,
-                          ]}
-                        >
-                          <LinearGradient
-                            colors={["rgba(0,0,0,0.02)", "rgba(0,0,0,0.01)"]}
-                            style={styles.inputGradient}
-                          >
-                            <Ionicons
-                              name="person-outline"
-                              size={22}
-                              color={
-                                focusedInput === "signupName"
-                                  ? theme.accent
-                                  : theme.text
-                              }
-                              style={styles.inputIcon}
-                            />
-                            <TextInput
-                              style={styles.input}
-                              placeholder="Enter your full name"
-                              placeholderTextColor="#999"
-                              value={signupForm.name}
-                              onChangeText={(text) =>
-                                setSignupForm({ ...signupForm, name: text })
-                              }
-                              onFocus={() => setFocusedInput("signupName")}
-                              onBlur={() => setFocusedInput("")}
-                            />
-                          </LinearGradient>
-                        </View>
-
-                        <View
-                          style={[
-                            styles.inputContainer,
-                            focusedInput === "signupEmail" &&
-                              styles.inputFocused,
-                          ]}
-                        >
-                          <LinearGradient
-                            colors={["rgba(0,0,0,0.02)", "rgba(0,0,0,0.01)"]}
-                            style={styles.inputGradient}
-                          >
-                            <Ionicons
-                              name="mail-outline"
-                              size={22}
-                              color={
-                                focusedInput === "signupEmail"
-                                  ? theme.accent
-                                  : theme.text
-                              }
-                              style={styles.inputIcon}
-                            />
-                            <TextInput
-                              style={styles.input}
-                              placeholder="Enter your email"
-                              placeholderTextColor="#999"
-                              value={signupForm.email}
-                              onChangeText={(text) =>
-                                setSignupForm({ ...signupForm, email: text })
-                              }
-                              onFocus={() => setFocusedInput("signupEmail")}
-                              onBlur={() => setFocusedInput("")}
-                              keyboardType="email-address"
-                              autoCapitalize="none"
-                            />
-                          </LinearGradient>
-                        </View>
-
-                        <View
-                          style={[
-                            styles.inputContainer,
-                            focusedInput === "signupPassword" &&
-                              styles.inputFocused,
+                            focusedInput === "password" && styles.inputFocused,
                           ]}
                         >
                           <LinearGradient
@@ -737,7 +551,7 @@ const AuthScreen = () => {
                               name="lock-closed-outline"
                               size={22}
                               color={
-                                focusedInput === "signupPassword"
+                                focusedInput === "password"
                                   ? theme.accent
                                   : theme.text
                               }
@@ -745,15 +559,15 @@ const AuthScreen = () => {
                             />
                             <TextInput
                               style={styles.input}
-                              placeholder="Create password"
+                              placeholder="Enter new password"
                               placeholderTextColor="#999"
-                              value={signupForm.password}
+                              value={resetForm.password}
                               onChangeText={(text) => {
                                 const newForm = {
-                                  ...signupForm,
+                                  ...resetForm,
                                   password: text,
                                 };
-                                setSignupForm(newForm);
+                                setResetForm(newForm);
                                 if (newForm.confirmPassword) {
                                   validatePasswords(
                                     text,
@@ -761,7 +575,7 @@ const AuthScreen = () => {
                                   );
                                 }
                               }}
-                              onFocus={() => setFocusedInput("signupPassword")}
+                              onFocus={() => setFocusedInput("password")}
                               onBlur={() => setFocusedInput("")}
                               secureTextEntry={!showPassword}
                             />
@@ -786,7 +600,7 @@ const AuthScreen = () => {
                         <View
                           style={[
                             styles.inputContainer,
-                            focusedInput === "signupConfirm" &&
+                            focusedInput === "confirmPassword" &&
                               styles.inputFocused,
                           ]}
                         >
@@ -798,7 +612,7 @@ const AuthScreen = () => {
                               name="checkmark-circle-outline"
                               size={22}
                               color={
-                                focusedInput === "signupConfirm"
+                                focusedInput === "confirmPassword"
                                   ? theme.accent
                                   : theme.text
                               }
@@ -806,18 +620,18 @@ const AuthScreen = () => {
                             />
                             <TextInput
                               style={styles.input}
-                              placeholder="Confirm password"
+                              placeholder="Confirm new password"
                               placeholderTextColor="#999"
-                              value={signupForm.confirmPassword}
+                              value={resetForm.confirmPassword}
                               onChangeText={(text) => {
                                 const newForm = {
-                                  ...signupForm,
+                                  ...resetForm,
                                   confirmPassword: text,
                                 };
-                                setSignupForm(newForm);
+                                setResetForm(newForm);
                                 validatePasswords(newForm.password, text);
                               }}
-                              onFocus={() => setFocusedInput("signupConfirm")}
+                              onFocus={() => setFocusedInput("confirmPassword")}
                               onBlur={() => setFocusedInput("")}
                               secureTextEntry={!showConfirmPassword}
                             />
@@ -860,15 +674,15 @@ const AuthScreen = () => {
                           <TouchableOpacity
                             style={[
                               styles.primaryButton,
-                              !isSignupFormValid() && styles.disabledButton,
+                              !isResetFormValid() && styles.disabledButton,
                             ]}
-                            onPress={handleSignup}
-                            disabled={!isSignupFormValid()}
+                            onPress={handleResetPassword}
+                            disabled={!isResetFormValid() || isResetting}
                             activeOpacity={0.8}
                           >
                             <LinearGradient
                               colors={
-                                !isSignupFormValid()
+                                !isResetFormValid()
                                   ? ["#E0E0E0", "#BDBDBD"]
                                   : [theme.accent, theme.accent + "CC"]
                               }
@@ -876,15 +690,23 @@ const AuthScreen = () => {
                               start={{ x: 0, y: 0 }}
                               end={{ x: 1, y: 0 }}
                             >
-                              <Text style={styles.buttonText}>
-                                Create Account
-                              </Text>
-                              <Ionicons
-                                name="arrow-forward"
-                                size={20}
-                                color="white"
-                                style={styles.buttonIcon}
-                              />
+                              {isResetting ? (
+                                <Text style={styles.buttonText}>
+                                  Resetting Password...
+                                </Text>
+                              ) : (
+                                <>
+                                  <Text style={styles.buttonText}>
+                                    Reset Password
+                                  </Text>
+                                  <Ionicons
+                                    name="checkmark"
+                                    size={20}
+                                    color="white"
+                                    style={styles.buttonIcon}
+                                  />
+                                </>
+                              )}
                             </LinearGradient>
                           </TouchableOpacity>
                         </Animated.View>
@@ -966,32 +788,23 @@ const createStyles = (theme: any) =>
       flex: 1,
       zIndex: 1,
     },
-    scrollContainer: {
-      justifyContent: "center",
-      padding: 20,
-      minHeight: height,
-    },
-    scrollContainerWithKeyboard: {
-      justifyContent: "flex-start",
+    backButton: {
+      flexDirection: "row",
+      alignItems: "center",
       paddingTop: 40,
+      paddingLeft: 20,
+      paddingVertical: 15,
+    },
+    backButtonText: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: theme.text,
+      marginLeft: 8,
     },
     logoContainer: {
       alignItems: "center",
       marginBottom: 40,
       paddingTop: 20,
-    },
-    logoGradient: {
-      width: 100,
-      height: 100,
-      borderRadius: 50,
-      justifyContent: "center",
-      alignItems: "center",
-      marginBottom: 20,
-      shadowColor: theme.accent,
-      shadowOffset: { width: 0, height: 10 },
-      shadowOpacity: 0.3,
-      shadowRadius: 20,
-      elevation: 15,
     },
     appName: {
       fontSize: 32,
@@ -1003,11 +816,19 @@ const createStyles = (theme: any) =>
       textShadowOffset: { width: 0, height: 2 },
       textShadowRadius: 4,
     },
+    welcomeTitle: {
+      fontSize: 24,
+      fontWeight: "700",
+      color: theme.text,
+      marginBottom: 8,
+      textAlign: "center",
+    },
     welcomeSubtitle: {
       fontSize: 16,
       color: theme.text,
       fontWeight: "500",
       textAlign: "center",
+      opacity: 0.8,
     },
     authCard: {
       borderRadius: 30,
@@ -1024,58 +845,6 @@ const createStyles = (theme: any) =>
       padding: 30,
       borderWidth: 1,
       borderColor: "rgba(255,255,255,0.3)",
-    },
-    tabContainer: {
-      flexDirection: "row",
-      position: "relative",
-      marginBottom: 30,
-      backgroundColor: "rgba(0,0,0,0.05)",
-      borderRadius: 30,
-      padding: 4,
-      shadowColor: "rgba(0,0,0,0.1)",
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 1,
-      shadowRadius: 8,
-      elevation: 5,
-      borderWidth: 2,
-      borderColor: theme.accent,
-    },
-    tabIndicator: {
-      position: "absolute",
-      top: 4,
-      bottom: 4,
-      width: "48%",
-      left: 4,
-      borderRadius: 25,
-      backgroundColor: theme.accent,
-      shadowColor: theme.accent,
-      shadowOffset: { width: 0, height: 6 },
-      shadowOpacity: 0.4,
-      shadowRadius: 12,
-      elevation: 10,
-    },
-    tab: {
-      flex: 1,
-      paddingVertical: 16,
-      alignItems: "center",
-      justifyContent: "center",
-      borderRadius: 20,
-      zIndex: 1,
-      flexDirection: "row",
-    },
-    tabIcon: {
-      marginRight: 8,
-    },
-    tabText: {
-      fontSize: 16,
-      fontWeight: "600",
-      color: theme.text,
-      opacity: 0.6,
-    },
-    activeTabText: {
-      color: "white",
-      fontWeight: "700",
-      opacity: 1,
     },
     formContainer: {
       paddingHorizontal: 0,
@@ -1145,18 +914,6 @@ const createStyles = (theme: any) =>
       fontWeight: "500",
       flex: 1,
     },
-    forgotPassword: {
-      alignSelf: "flex-end",
-      marginBottom: 25,
-      paddingVertical: 8,
-      paddingHorizontal: 8,
-    },
-    forgotPasswordText: {
-      color: theme.accent,
-      fontSize: 15,
-      fontWeight: "600",
-      textDecorationLine: "underline",
-    },
     primaryButton: {
       borderRadius: 25,
       overflow: "hidden",
@@ -1225,4 +982,4 @@ const createStyles = (theme: any) =>
     },
   });
 
-export default AuthScreen;
+export default ForgotPasswordScreen;

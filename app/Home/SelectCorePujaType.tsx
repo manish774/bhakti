@@ -1,5 +1,6 @@
 import { useTheme } from "@/context/ThemeContext";
 import { ICorePujaType, useAuth } from "@/context/UserContext";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   Dimensions,
@@ -64,7 +65,7 @@ const SelectCorePujaType: React.FC<PujaTypeSelectorProps> = ({
       icon: "✨",
       color: "#45B7D1",
       shadowColor: "#45B7D1",
-      visible: false,
+      visible: true,
     },
     {
       type: ICorePujaType.BOOK_OFFLINE_PUJA,
@@ -86,6 +87,7 @@ const SelectCorePujaType: React.FC<PujaTypeSelectorProps> = ({
     if (selectedType) {
       onSelection?.(selectedType);
       setCorePujaType(selectedType);
+      router.push("/Home/Home");
     }
   };
 
@@ -188,11 +190,6 @@ const SelectCorePujaType: React.FC<PujaTypeSelectorProps> = ({
               : "Please Select an Option"}
           </Text>
         </TouchableOpacity>
-
-        {/* Bottom Decoration */}
-        <View style={styles.bottomDecoration}>
-          <Text style={styles.decorationText}>Make you choise </Text>
-        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -201,22 +198,15 @@ const SelectCorePujaType: React.FC<PujaTypeSelectorProps> = ({
 const createStyles = (theme: any) =>
   StyleSheet.create({
     safeArea: {
-      flex: 1,
       backgroundColor: "#F8F9FA",
     },
-    container: {
-      flex: 1,
-    },
+    container: {},
     scrollContent: {
       flexGrow: 1,
       paddingHorizontal: 20,
-      paddingTop: 20,
-      paddingBottom: 30,
     },
     header: {
       alignItems: "center",
-      marginBottom: 40,
-      paddingTop: 20,
     },
     headerTitle: {
       fontSize: 28,
@@ -234,7 +224,7 @@ const createStyles = (theme: any) =>
     optionsContainer: {
       flex: 1,
       justifyContent: "center",
-      marginVertical: 20,
+      marginVertical: 5,
     },
     optionCard: {
       backgroundColor: "white",
@@ -242,7 +232,7 @@ const createStyles = (theme: any) =>
       borderRadius: 20,
       flexDirection: "row",
       alignItems: "center",
-      padding: 24,
+      padding: 15,
       borderWidth: 1,
       borderColor: "#E8E8E8",
       // iOS Shadow
@@ -312,7 +302,7 @@ const createStyles = (theme: any) =>
     },
     bottomDecoration: {
       alignItems: "center",
-      marginTop: 20,
+      marginTop: 10,
     },
     decorationText: {
       fontSize: 16,
