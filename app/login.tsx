@@ -3,6 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Animated,
+  BackHandler,
   Dimensions,
   Keyboard,
   KeyboardAvoidingView,
@@ -166,7 +167,6 @@ const AuthScreen = () => {
     };
   }, []);
 
-  // Validation functions
   const validatePasswords = (password: string, confirmPassword: string) => {
     if (confirmPassword && password !== confirmPassword) {
       setPasswordError("Passwords do not match");
@@ -205,6 +205,19 @@ const AuthScreen = () => {
     }).start();
   };
 
+  useEffect(() => {
+    const backAction = () => {
+      return true; // prevent default back action
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, []);
+
   const handleLogin = async () => {
     if (!signInLoaded || !isLoginFormValid()) return;
 
@@ -221,7 +234,7 @@ const AuthScreen = () => {
         await setSignInActive({ session: result.createdSessionId });
 
         if (returnTo) {
-          router.push(returnTo as any);
+          router.push("/Home/Home");
         } else {
           router.push("/");
         }
@@ -1095,7 +1108,7 @@ const createStyles = (theme: any) =>
     inputGradient: {
       flexDirection: "row",
       alignItems: "center",
-      paddingHorizontal: 20,
+      paddingHorizontal: 10,
       minHeight: 60,
       borderWidth: 2,
       borderColor: "rgba(0,0,0,0.08)",

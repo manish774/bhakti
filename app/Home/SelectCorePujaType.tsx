@@ -1,5 +1,6 @@
 import { useTheme } from "@/context/ThemeContext";
 import { ICorePujaType, useAuth } from "@/context/UserContext";
+import { useNavigation } from "@react-navigation/native";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -36,6 +37,7 @@ const SelectCorePujaType: React.FC<PujaTypeSelectorProps> = ({
   const { setCorePujaType } = useAuth();
   const { theme } = useTheme();
   const styles = createStyles(theme);
+  const { navigate } = useNavigation();
   const pujaOptions: PujaOption[] = [
     {
       type: ICorePujaType.BOOK_PUJA,
@@ -88,6 +90,7 @@ const SelectCorePujaType: React.FC<PujaTypeSelectorProps> = ({
       onSelection?.(selectedType);
       setCorePujaType(selectedType);
       router.push("/Home/Home");
+      //navigate("Home/Home");
     }
   };
 

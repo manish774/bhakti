@@ -24,7 +24,6 @@ export default function Description() {
   const idParam = params.id as string | undefined;
   const navigation: any = useNavigation();
   const [selectedDevoteeType, setSelectedDevoteeType] = useState<string>();
-  // const [popularDevoteeType, setPopularDevoteeType] = useState<string>();
   const [showModel, setShowModel] = useState<boolean>(false);
   const [showPrasadamModel, setShowPrasadamModel] = useState<boolean>(false);
   const [isFormCompleted, setIsFormCompleted] = useState<boolean>(false);
@@ -32,10 +31,8 @@ export default function Description() {
   const [snackMessage, setSnackMessage] = useState<string>("");
   const { isSignedIn } = useAuth();
 
-  //alert(JSON.stringify(params));
   const item = rawJson.data.find((d: any) => d?.[Core.id] === idParam);
   const { theme } = useTheme();
-  // Instantiate style sheet from factory with current theme, maxWidth and platform
   const styles = createStyles({ theme, maxWidth, platform: Platform });
 
   const transformedPlans = useMemo(() => {
@@ -276,25 +273,25 @@ export default function Description() {
           )}
 
           {
-            <View style={styles.section}>
-              <View style={styles.deliveryCard}>
-                <Text style={styles.deliveryLabel}>
-                  Want to Book prasad only ?
-                </Text>
-                <Button
-                  mode={"contained-tonal"}
-                  onPress={() => {
-                    VibrationManager.selection();
-                    setTimeout(() => setShowPrasadamModel(true), 300);
-                  }}
-                  style={styles.fixedBookButton}
-                  contentStyle={[styles.fixedButtonContent]}
-                  labelStyle={styles.fixedBookButtonText}
-                >
-                  Get prasadam
-                </Button>
-              </View>
-            </View>
+            // <View style={styles.section}>
+            //   <View style={styles.deliveryCard}>
+            //     <Text style={styles.deliveryLabel}>
+            //       Want to Book prasad only ?
+            //     </Text>
+            //     <Button
+            //       mode={"contained-tonal"}
+            //       onPress={() => {
+            //         VibrationManager.selection();
+            //         setTimeout(() => setShowPrasadamModel(true), 300);
+            //       }}
+            //       style={styles.fixedBookButton}
+            //       contentStyle={[styles.fixedButtonContent]}
+            //       labelStyle={styles.fixedBookButtonText}
+            //     >
+            //       Get prasadam
+            //     </Button>
+            //   </View>
+            // </View>
           }
 
           {/* Spacer to prevent content from being hidden behind fixed button */}

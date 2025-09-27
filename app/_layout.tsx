@@ -2,6 +2,7 @@ import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 import { AuthProvider, useAuth } from "@/context/UserContext";
 import { ClerkProvider } from "@clerk/clerk-expo";
 import { tokenCache } from "@clerk/clerk-expo/token-cache";
+import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import { Image, TouchableOpacity } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -34,10 +35,7 @@ function MainStack() {
         <TouchableOpacity
           onPress={() => router.push("/Home/SelectCorePujaType")}
         >
-          <Image
-            source={require("@/assets/images/settings.png")}
-            style={{ width: 30, height: 30, marginLeft: 8 }}
-          />
+          <Ionicons name="ellipsis-vertical" size={24} color={theme.text} />
         </TouchableOpacity>
       )
     );
@@ -47,8 +45,9 @@ function MainStack() {
       <Stack.Screen
         name="index"
         options={{
-          title: "Home",
+          title: "",
           headerStyle: { backgroundColor: theme.background },
+          headerBackVisible: false,
           headerTitleStyle: {
             color: theme.accent,
             fontWeight: "bold",

@@ -47,6 +47,9 @@ const OTPscreen = ({
 
   const onChangeHandler = async (text: string, i: number) => {
     if (text?.toString().length > 1) {
+      if (isNaN(parseInt(text))) {
+        return;
+      }
       const newDigits = text.split("").slice(0, totalInput); // Limit to totalInput digits
       const newCode = Array.from({ length: totalInput }, (_, index) => {
         if (index < i) {
@@ -64,6 +67,9 @@ const OTPscreen = ({
         totalInput - 1
       );
       inputRefs.current[lastFilledIndex]?.focus();
+      if (text.length === totalInput) {
+        onSubmit(newCode);
+      }
     } else {
       // Update the current input
       const xCode = code?.map((x, ind) => (ind === i ? text : x));
@@ -264,7 +270,7 @@ const createStyles = (theme: any) =>
       borderWidth: 2,
       borderColor: theme.cardBorder,
       borderRadius: 12,
-      marginHorizontal: 6, // spacing between boxes
+      marginHorizontal: 2, // spacing between boxes
       paddingHorizontal: 10,
       backgroundColor: theme.background,
       elevation: 4,
