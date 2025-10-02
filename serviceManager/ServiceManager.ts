@@ -276,13 +276,7 @@ class ServiceManager {
   public async logout(): Promise<any> {
     try {
       const url = this.mURL("api/auth/logout");
-      const response = await axios.post(
-        url,
-        {},
-        {
-          withCredentials: true, // Send cookies to server for logout
-        }
-      );
+      const response = await axios.get(url);
       // Clear local token after successful logout
       await this.clearAuthToken();
       return response.data;
