@@ -1,8 +1,7 @@
 import { useTheme } from "@/context/ThemeContext";
-import { ICorePujaType, useAuth } from "@/context/UserContext";
+import { useAuth } from "@/context/UserContext";
 import { useNavigation } from "@react-navigation/native";
-import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dimensions,
   SafeAreaView,
@@ -13,18 +12,18 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+// import { ICorePujaType, PujaOption } from "../auth/utils";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import {
+  ICorePujaType,
+  PujaOption,
+  pujaOptions,
+  RootStackParamList,
+} from "../utils/utils";
+
+type NavigationProps = NativeStackNavigationProp<RootStackParamList>;
 
 const { width } = Dimensions.get("window");
-
-interface PujaOption {
-  type: ICorePujaType;
-  title: string;
-  description: string;
-  icon: string;
-  color: string;
-  shadowColor: string;
-  visible: boolean;
-}
 
 interface PujaTypeSelectorProps {
   onSelection?: (selectedType: ICorePujaType) => void;
@@ -34,63 +33,30 @@ const SelectCorePujaType: React.FC<PujaTypeSelectorProps> = ({
   onSelection,
 }) => {
   const [selectedType, setSelectedType] = useState<ICorePujaType | null>(null);
-  const { setCorePujaType } = useAuth();
+  const { setCorePujaType, isLoggedIn, corePujaType } = useAuth();
   const { theme } = useTheme();
   const styles = createStyles(theme);
-  const { navigate } = useNavigation();
-  const pujaOptions: PujaOption[] = [
-    {
-      type: ICorePujaType.BOOK_PUJA,
-      title: "Book Puja",
-      description:
-        "Personalized puja performed by a priest with your name & gotra. Includes mantra chanting and a recorded video.",
-      icon: "🙏",
-      color: "#FF6B6B",
-      shadowColor: "#FF6B6B",
-      visible: true,
-    },
-    {
-      type: ICorePujaType.BOOK_PRASAD,
-      title: "Book Prasad",
-      description:
-        "Get sacred prasad offered during a puja, packed and delivered with divine blessings.",
-      icon: "🍯",
-      color: "#4ECDC4",
-      shadowColor: "#4ECDC4",
-      visible: true,
-    },
-    {
-      type: ICorePujaType.BOOK_PUJA_SAMAGRI,
-      title: "Book Puja Samagri (Coming soon)",
-      description:
-        "Order a complete puja samagri kit that includes all essential ritual items like incense, diya, kumkum, rice, and flowers. Ideal for performing your own puja at home.",
-      icon: "✨",
-      color: "#45B7D1",
-      shadowColor: "#45B7D1",
-      visible: true,
-    },
-    {
-      type: ICorePujaType.BOOK_OFFLINE_PUJA,
-      title: "Book Offline Puja",
-      description:
-        "Schedule a priest to perform a full traditional puja at your home or venue.",
-      icon: "🏠",
-      color: "#FFA500",
-      shadowColor: "#FFA500",
-      visible: true,
-    },
-  ];
+  const navigation = useNavigation<NavigationProps>();
 
   const handlePress = (type: ICorePujaType): void => {
     setSelectedType(type);
   };
 
+  useEffect(() => {
+    if (navigation && typeof navigation.setOptions === "function") {
+      navigation.setOptions({
+        headerShown: false,
+        title: pujaOptions?.find((puja) => puja.type === corePujaType)?.title,
+      });
+    }
+  }, [navigation, corePujaType]);
+
   const handleConfirm = (): void => {
     if (selectedType) {
       onSelection?.(selectedType);
       setCorePujaType(selectedType);
-      router.push("/Home/Home");
-      //navigate("Home/Home");
+      //router.push("/Home/Home");
+      navigation.navigate("Home");
     }
   };
 
@@ -203,16 +169,21 @@ const createStyles = (theme: any) =>
     safeArea: {
       backgroundColor: "#F8F9FA",
     },
-    container: {},
+    container: {
+      marginTop: 10,
+    },
     scrollContent: {
       flexGrow: 1,
+      justifyContent: "flex-end", // content starts from bottom
       paddingHorizontal: 20,
+      paddingTop: 20, // give gap at top
+      paddingBottom: 0,
     },
     header: {
       alignItems: "center",
     },
     headerTitle: {
-      fontSize: 28,
+      fontSize: 20,
       fontWeight: "bold",
       color: "#2C3E50",
       marginBottom: 8,
@@ -246,15 +217,15 @@ const createStyles = (theme: any) =>
       elevation: 4,
     },
     iconCircle: {
-      width: 60,
-      height: 60,
+      width: 45,
+      height: 45,
       borderRadius: 30,
       justifyContent: "center",
       alignItems: "center",
       marginRight: 20,
     },
     iconText: {
-      fontSize: 24,
+      fontSize: 20,
     },
     optionContent: {
       flex: 1,

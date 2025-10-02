@@ -1,9 +1,19 @@
 import { FormProps, IStepper } from "@/app/Description/types";
 import { VibrationManager } from "@/utils/Vibrate";
+import { LinearGradient } from "expo-linear-gradient";
 import React, { useMemo, useState } from "react";
-import { StyleSheet, TextInput, View } from "react-native";
-import { FAB, Text } from "react-native-paper";
+import {
+  Animated,
+  Dimensions,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import { FAB } from "react-native-paper";
 import { useTheme } from "../../context/ThemeContext";
+
+const { height, width } = Dimensions.get("window");
 
 const Stepper = ({
   steps: newSteps,
@@ -19,6 +29,9 @@ const Stepper = ({
   const [steps, setSteps] = useState(newSteps);
   const [currentStep, setCurrentStep] = useState(newSteps[0]);
   const { theme } = useTheme();
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [flowerAnims, setFlowerAnims] = useState<Animated.Value[]>([]);
+
   const stepLength = useMemo(
     () => steps.filter((x) => x.visible).length - 1,
     [steps]
@@ -39,7 +52,6 @@ const Stepper = ({
 
   const onRemove = () => {
     const lastRenderedStep = steps.filter((step) => step.visible).length - 1;
-
     const updateSteps = steps.map((x, i) => ({
       ...x,
       visible: i === lastRenderedStep ? false : x.visible,
@@ -63,62 +75,131 @@ const Stepper = ({
     });
 
     setSteps(updatedSteps);
-
-    // also update currentStep reference
     const updatedCurrentStep = updatedSteps.find(
       (step) => step.name === mStep.name
     );
-    if (updatedCurrentStep) {
-      setCurrentStep(updatedCurrentStep);
-    }
+    if (updatedCurrentStep) setCurrentStep(updatedCurrentStep);
   };
 
   const getForms = (formProps: FormProps[], step: IStepper) => {
-    return formProps.map((x) => {
-      return (
-        <TextInput
-          key={x.name}
-          placeholder={x.placeholder || x.name}
-          placeholderTextColor={theme?.text}
-          style={[
-            styles.formInput,
-            {
-              borderColor: theme?.cardBorder || "#ccc",
-              backgroundColor: theme?.card || "#fff",
-              color: theme?.text || "#333",
-            },
-          ]}
-          onChangeText={(e) => validateStep(e, x.name, step)}
-        />
-      );
-    });
+    return formProps.map((x) => (
+      <TextInput
+        key={x.name}
+        placeholder={x.placeholder || x.name}
+        placeholderTextColor={theme?.text + "80"}
+        style={[
+          styles.formInput,
+          {
+            borderColor: theme?.cardBorder || "#ddd",
+            backgroundColor: theme?.card || "#fff",
+            color: theme?.text || "#333",
+          },
+        ]}
+        onChangeText={(e) => validateStep(e, x.name, step)}
+      />
+    ));
   };
 
   const getDescriptions = (description: string | React.ReactNode) => {
     if (typeof description === "string") {
-      return <Text>{description}</Text>;
+      return <Text style={styles.descriptionText}>{description}</Text>;
     }
     return description;
   };
 
-  const isAllFormsValid = () => {
-    return steps.some((x) => x.isValid(x.formProps));
+  const isAllFormsValid = () => steps.some((x) => x.isValid(x.formProps));
+
+  // Flower animation trigger
+  const startFlowerAnimation = () => {
+    const newAnims = Array.from({ length: 10 }, () => new Animated.Value(0));
+    setFlowerAnims(newAnims);
+
+    newAnims.forEach((anim, i) => {
+      Animated.timing(anim, {
+        toValue: 1,
+        duration: 4000,
+        delay: i * 200,
+        useNativeDriver: true,
+      }).start();
+    });
   };
+
+  const handleSubmit = () => {
+    setIsSuccess(true);
+    startFlowerAnimation();
+    onSubmit?.(
+      steps.map((x) => {
+        return x?.formProps || [];
+      })
+    );
+  };
+
+  if (isSuccess) {
+    return (
+      <LinearGradient
+        colors={["#4CAF50", "#2E7D32"]}
+        style={styles.successContainer}
+      >
+        <View style={styles.successCard}>
+          <Text style={styles.checkIcon}>✔️</Text>
+          <Text style={styles.successText}>Booking Successful!</Text>
+          <Text style={styles.successSubText}>
+            Your puja has been booked successfully. 🙏
+          </Text>
+        </View>
+
+        {flowerAnims.map((anim, i) => {
+          const translateY = anim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [-50, height + 50],
+          });
+          const translateX = Math.random() * width;
+          const rotate = anim.interpolate({
+            inputRange: [0, 1],
+            outputRange: ["0deg", `${Math.random() * 360}deg`],
+          });
+
+          return (
+            <Animated.Text
+              key={i}
+              style={[
+                styles.flower,
+                { transform: [{ translateY }, { translateX }, { rotate }] },
+              ]}
+            >
+              🌸
+            </Animated.Text>
+          );
+        })}
+      </LinearGradient>
+    );
+  }
 
   return (
     <View style={styles.container}>
       {headerContent}
+
       {steps?.map(
         (step, index) =>
           step.visible && (
             <View style={styles.stepContainer} key={step.name}>
               <View style={styles.stepContent}>
+                {/* Step Indicator */}
                 <View style={styles.indicatorWrapper}>
-                  <View style={styles.stepIndicator} />
-                  {index <= stepLength && (
-                    <View style={styles.connectingLine} />
-                  )}
+                  <LinearGradient
+                    colors={
+                      index === stepLength
+                        ? [theme.button, theme.accent || "#FF9800"]
+                        : ["#d3d3d3", "#b0b0b0"]
+                    }
+                    style={styles.stepIndicator}
+                  >
+                    <Text style={styles.stepNumber}>{index + 1}</Text>
+                  </LinearGradient>
+                  {<View style={styles.connectingLine} />}
                 </View>
+
+                {/* Step Content */}
                 {step?.formProps || step.descriptionForm ? (
                   <View style={styles.contentWrapper}>
                     <View style={styles.stepText}>
@@ -140,18 +221,18 @@ const Stepper = ({
           )
       )}
 
-      {/* FAB moved outside the map and below all steps */}
+      {/* Floating Action Buttons */}
       {!isAllStepsRendered ? (
         <View style={styles.fabContainer}>
           <FAB
-            icon="plus"
+            icon="arrow-right"
             style={styles.addMore}
             onPress={() => {
               VibrationManager.stop();
               onAdd();
             }}
-            color={theme.buttonText || "#ffffff"}
-            size="small"
+            color={theme.buttonText || "#fff"}
+            size="medium"
             disabled={currentStep?.isValid(currentStep.formProps)}
           />
         </View>
@@ -160,21 +241,15 @@ const Stepper = ({
           <FAB
             icon="check"
             style={styles.addMore}
-            color={theme.buttonText || "#ffffff"}
-            size="small"
+            color={theme.buttonText || "#fff"}
+            size="medium"
             disabled={isAllFormsValid()}
-            onPress={() => {
-              onSubmit(
-                steps.map((x) => {
-                  return x?.formProps || [];
-                })
-              );
-            }}
+            onPress={handleSubmit}
           />
-          <Text style={styles.submitText}>Click To Complete</Text>
+          <Text style={styles.submitText}>Complete Booking</Text>
         </View>
       )}
-      {/* <Button onPress={onRemove}>Remove Step</Button> */}
+
       {bottomContent}
     </View>
   );
@@ -183,12 +258,10 @@ const Stepper = ({
 const createStyles = (theme: any) =>
   StyleSheet.create({
     container: {
-      // backgroundColor: theme.background,
-      paddingHorizontal: 0,
-      paddingVertical: 0,
+      paddingVertical: 8,
     },
     stepContainer: {
-      marginBottom: 0,
+      marginBottom: 12,
     },
     stepContent: {
       flexDirection: "row",
@@ -196,70 +269,50 @@ const createStyles = (theme: any) =>
     },
     indicatorWrapper: {
       alignItems: "center",
+      marginRight: 16,
       position: "relative",
     },
     stepIndicator: {
-      width: 24,
-      height: 24,
-      borderRadius: 12,
-      backgroundColor: theme.button || "#007AFF",
-      marginRight: 16,
-      zIndex: 1,
-      elevation: 4,
-      shadowColor: theme.text,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.15,
-      shadowRadius: 8,
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      alignItems: "center",
+      justifyContent: "center",
+      elevation: 5,
+    },
+    stepNumber: {
+      color: "#fff",
+      fontWeight: "bold",
+      fontSize: 16,
     },
     connectingLine: {
       position: "absolute",
-      top: 24,
+      top: 36,
       width: 2,
-      minHeight: 125,
       height: "100%",
       backgroundColor: theme.button,
-      left: 11,
-      opacity: 0.6,
+      opacity: 0.4,
     },
     contentWrapper: {
       flex: 1,
-      minHeight: 60,
-      paddingVertical: 8,
-      paddingHorizontal: 10,
-      backgroundColor: theme.card || "#f8f9fa",
+      minHeight: 70,
+      padding: 14,
+      backgroundColor: theme.card,
       borderRadius: 16,
-      borderColor: theme.cardBorder,
-      marginBottom: 8,
-      elevation: 6,
-      shadowColor: theme.text,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.15,
-      shadowRadius: 12,
+      elevation: 3,
     },
     formInput: {
       borderWidth: 1,
-      borderColor: theme.cardBorder || "#ccc",
-      backgroundColor: theme.background,
-      color: theme.text,
-      padding: 12,
+      padding: 14,
       borderRadius: 12,
-      marginVertical: 6,
+      marginVertical: 8,
       height: 50,
-      fontSize: 16,
-      elevation: 2,
-      shadowColor: theme.text,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.08,
-      shadowRadius: 6,
-    },
-    descriptionContainer: {
-      padding: 8,
+      fontSize: 15,
     },
     descriptionText: {
       fontSize: 16,
-      color: theme.text || "#333333",
-      lineHeight: 24,
-      fontWeight: "500",
+      color: theme.text,
+      lineHeight: 22,
     },
     placeholderContainer: {
       flex: 1,
@@ -271,43 +324,72 @@ const createStyles = (theme: any) =>
     },
     placeholderText: {
       fontSize: 14,
-      color: theme.text || "#666666",
-      fontStyle: "italic",
+      color: theme.text,
       opacity: 0.6,
-    },
-    stepText: {
-      fontSize: 16,
-      color: theme.text || "#333333",
-      lineHeight: 24,
+      fontStyle: "italic",
     },
     fabContainer: {
-      alignItems: "baseline",
-      marginTop: 16,
-      paddingTop: 8,
-      marginLeft: -8,
+      alignItems: "flex-end",
+      marginTop: 20,
+      left: -10,
     },
     addMore: {
-      backgroundColor: theme.button || "#007AFF",
-      borderRadius: 28,
-      elevation: 8,
-      shadowColor: theme.text || "#000000",
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.3,
-      shadowRadius: 8,
-      width: 40,
-      height: 40,
-      alignItems: "center",
+      backgroundColor: theme.button,
+      borderRadius: 30,
+      width: 56,
+      height: 56,
       justifyContent: "center",
+      alignItems: "center",
+      elevation: 8,
     },
     submitFab: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 12,
+      gap: 10,
     },
     submitText: {
       fontSize: 16,
-      color: theme.text || "#333",
-      fontWeight: "500",
+      color: theme.text,
+      fontWeight: "600",
+    },
+    successContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    successCard: {
+      width: width * 0.8,
+      backgroundColor: "#fff",
+      borderRadius: 20,
+      padding: 30,
+      alignItems: "center",
+      shadowColor: "#000",
+      shadowOpacity: 0.1,
+      shadowRadius: 10,
+      elevation: 6,
+    },
+    checkIcon: {
+      fontSize: 60,
+      marginBottom: 20,
+      color: "#4CAF50",
+    },
+    successText: {
+      fontSize: 26,
+      fontWeight: "700",
+      color: "#2E7D32",
+      marginBottom: 10,
+      textAlign: "center",
+    },
+    successSubText: {
+      fontSize: 16,
+      color: "#555",
+      textAlign: "center",
+      lineHeight: 22,
+      marginBottom: 10,
+    },
+    flower: {
+      position: "absolute",
+      fontSize: 28,
     },
   });
 

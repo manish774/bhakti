@@ -1,9 +1,9 @@
 import ExpandablePlanSelector from "@/components/ExpandableSelector/ExpandableSelector";
 import Model from "@/components/Model";
+import { useAuth } from "@/context/UserContext";
 import { Core, TempleMetadata } from "@/serviceManager/ServiceManager";
 import { VibrationManager } from "@/utils/Vibrate";
-import { useAuth } from "@clerk/clerk-expo";
-import { useNavigation } from "@react-navigation/native";
+import { RouteProp } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -12,24 +12,38 @@ import { Button, Chip, Divider, Snackbar, Text } from "react-native-paper";
 import { useTheme } from "../../context/ThemeContext";
 import rawJson from "../Data/raw.json";
 
-import { imageMap } from "../utils/utils";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { imageMap, RootStackParamList } from "../utils/utils";
 import { PackageForm, PrasadamForm } from "./DescriptionUtils";
 import { styles as createStyles } from "./Styles";
+
 const { width: screenWidth } = Dimensions.get("window");
 const isWeb = Platform.OS === "web";
 const maxWidth = isWeb ? 800 : screenWidth;
-export default function Description() {
+
+type DescriptionScreenRouteProp = RouteProp<RootStackParamList, "Description">;
+type DescriptionScreenNavigationProp = StackNavigationProp<
+  RootStackParamList,
+  "Description"
+>;
+
+type Props = {
+  route: DescriptionScreenRouteProp;
+  navigation: DescriptionScreenNavigationProp;
+};
+
+export const Description: React.FC<Props> = ({ route, navigation }) => {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const idParam = params.id as string | undefined;
-  const navigation: any = useNavigation();
+
+  const { id: idParam } = route.params;
   const [selectedDevoteeType, setSelectedDevoteeType] = useState<string>();
   const [showModel, setShowModel] = useState<boolean>(false);
   const [showPrasadamModel, setShowPrasadamModel] = useState<boolean>(false);
   const [isFormCompleted, setIsFormCompleted] = useState<boolean>(false);
   const [snackVisible, setSnackVisible] = useState(false);
   const [snackMessage, setSnackMessage] = useState<string>("");
-  const { isSignedIn } = useAuth();
+  const { isLoggedIn } = useAuth();
 
   const item = rawJson.data.find((d: any) => d?.[Core.id] === idParam);
   const { theme } = useTheme();
@@ -309,15 +323,12 @@ export default function Description() {
               return;
             }
 
-            if (!isSignedIn) {
+            if (isLoggedIn) {
               VibrationManager.selection();
-              // Navigate to login screen with return path
-              router.push(
-                `/login?returnTo=/Description/BookPuja?id=${
-                  item?.[Core.id]
-                }&selectedDevotee=${selectedDevoteeType}`
-              );
-              return;
+              navigation.navigate("bookingPage", {
+                id: item?.[Core.id],
+                selectedDevotee: selectedDevoteeType!,
+              });
             }
 
             VibrationManager.selection();
@@ -390,6 +401,6 @@ export default function Description() {
       </Snackbar>
     </View>
   );
-}
+};
 
 // local themed styles created above with useMemo

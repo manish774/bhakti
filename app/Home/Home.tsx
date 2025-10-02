@@ -5,6 +5,7 @@ import { Core, TempleMetadata } from "@/serviceManager/ServiceManager";
 import { VibrationManager } from "@/utils/Vibrate";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -27,9 +28,9 @@ import {
 import SplashScreen from "../../components/SplashScreen";
 import { useTheme } from "../../context/ThemeContext";
 import rawJson from "../Data/raw.json";
-import AuthScreen from "../login";
+import AuthScreen from "../auth/login";
 import { createStyles } from "../styles";
-import { imageMap } from "../utils/utils";
+import { imageMap, pujaOptions, RootStackParamList } from "../utils/utils";
 import SelectCorePujaType from "./SelectCorePujaType";
 
 const { width: screenWidth } = Dimensions.get("window");
@@ -89,6 +90,8 @@ function AnimatedLetters({
   );
 }
 
+type NavigationProps = NativeStackNavigationProp<RootStackParamList>;
+
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
   const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | null>(null); // null = checking, true = first launch, false = not first launch
@@ -96,12 +99,12 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [visibleCount, setVisibleCount] = useState(6);
   const router = useRouter();
-  const navigation: any = useNavigation();
+  const navigation = useNavigation<NavigationProps>();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef<FlatList>(null);
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
-  const { clerkLoaded, isSignedIn, corePujaType } = useAuth();
+  const { isLoaded, isLoggedIn, isSignedIn, corePujaType } = useAuth();
 
   // Check if it's the first launch
   useEffect(() => {
@@ -191,11 +194,16 @@ export default function Home() {
   }, [showSplash, fadeAnim]);
 
   // Toggle the native/header visibility while splash is showing
+
   useEffect(() => {
     if (navigation && typeof navigation.setOptions === "function") {
-      navigation.setOptions({ headerShown: !showSplash });
+      navigation.setOptions({
+        headerShown: isLoggedIn,
+        title: pujaOptions?.find((puja) => puja.type === corePujaType)?.title,
+        gestureEnabled: false,
+      });
     }
-  }, [navigation, showSplash]);
+  }, [navigation, isLoggedIn, corePujaType]);
 
   // Reset visible count when search changes
   useEffect(() => {
@@ -231,9 +239,12 @@ export default function Home() {
   const handleBooking = useCallback(
     (item: TempleMetadata) => {
       VibrationManager.selection();
-      router.push({
-        pathname: "/Description/[id]",
-        params: { id: item?.[Core.id] },
+      // router.push({
+      //   pathname: "/Description/[id]",
+      //   params: { id: item?.[Core.id] },
+      // });
+      navigation.navigate("Description", {
+        id: item?.[Core.id],
       });
     },
     [router]
@@ -462,8 +473,8 @@ export default function Home() {
     return <SplashScreen onFinish={handleSplashFinish} />;
   }
 
-  // Show loading while Clerk is loading
-  if (!clerkLoaded) {
+  // Show loading while auth is loading
+  if (!isLoaded) {
     return (
       <View
         style={[
@@ -476,7 +487,6 @@ export default function Home() {
     );
   }
 
-  console.log(isSignedIn, "lllllll");
   return (
     <View style={styles.container}>
       {!isSignedIn ? (

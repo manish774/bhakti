@@ -1,7 +1,6 @@
 import useToast from "@/app/utils/common";
 import { useTheme } from "@/context/ThemeContext";
 import { LinearGradient } from "expo-linear-gradient";
-import { goBack } from "expo-router/build/global-state/routing";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
@@ -162,7 +161,7 @@ const OTPscreen = ({
                 </TouchableOpacity>
               </View>
             </View>
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={[
                 styles.goBack,
                 styles.primaryButton,
@@ -183,7 +182,7 @@ const OTPscreen = ({
               >
                 <Text style={styles.buttonText}>Go Back</Text>
               </LinearGradient>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         </KeyboardAvoidingView>
 
@@ -241,7 +240,7 @@ const createStyles = (theme: any) =>
       textAlign: "center",
     },
     authCard: {
-      backgroundColor: theme.card,
+      //backgroundColor: theme.card,
       borderRadius: 20,
       padding: 10,
       shadowColor: theme.text,

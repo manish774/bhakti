@@ -3,7 +3,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Animated,
-  Dimensions,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -22,11 +21,8 @@ import { useToast } from "@/app/utils/common";
 import OTPscreen from "@/components/OTPscreen";
 import { useTheme } from "@/context/ThemeContext";
 import { VibrationManager } from "@/utils/Vibrate";
-import { useSignIn } from "@clerk/clerk-expo";
 import { useNavigation } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-
-const { width, height } = Dimensions.get("window");
 
 const ForgotPasswordScreen = () => {
   const [currentStep, setCurrentStep] = useState<
@@ -34,7 +30,6 @@ const ForgotPasswordScreen = () => {
   >("email");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [animatedValue] = useState(new Animated.Value(0));
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [floatingElements] = useState([
     new Animated.Value(0),
@@ -54,7 +49,8 @@ const ForgotPasswordScreen = () => {
   const router = useRouter();
   const { toastVisible, toastMessage, toastAnim, showToast } = useToast();
 
-  const { isLoaded, signIn } = useSignIn();
+  // Custom forgot password state
+  const [isLoaded, setIsLoaded] = useState(true);
 
   // Form states
   const [email, setEmail] = useState("");
@@ -185,12 +181,10 @@ const ForgotPasswordScreen = () => {
 
     setIsVerifying(true);
     try {
-      // Create a password reset request
-      await signIn.create({
-        strategy: "reset_password_email_code",
-        identifier: email,
-      });
+      // Custom password reset request - replace with your API call
+      // await yourService.sendPasswordResetEmail(email);
 
+      // For now, just simulate success
       VibrationManager.success();
       showToast("Password reset code sent to your email!");
       setCurrentStep("verification");
@@ -198,9 +192,7 @@ const ForgotPasswordScreen = () => {
       VibrationManager.error();
 
       let errorMessage = "Failed to send reset email. Please try again.";
-      if (err?.errors?.[0]?.message) {
-        errorMessage = err.errors[0].message;
-      } else if (err?.message) {
+      if (err?.message) {
         errorMessage = err.message;
       }
 
@@ -222,20 +214,13 @@ const ForgotPasswordScreen = () => {
 
     setIsVerifying(true);
     try {
-      // Verify the reset code and prepare for password reset
-      const resetAttempt = await signIn.attemptFirstFactor({
-        strategy: "reset_password_email_code",
-        code: otp,
-      });
+      // Custom OTP verification - replace with your API call
+      // await yourService.verifyResetCode(email, otp);
 
-      if (resetAttempt.status === "needs_new_password") {
-        VibrationManager.success();
-        showToast("Code verified! Please set your new password.");
-        setCurrentStep("reset");
-      } else {
-        VibrationManager.error();
-        showToast("Verification failed. Please try again.");
-      }
+      // For now, just simulate success
+      VibrationManager.success();
+      showToast("Code verified! Please set your new password.");
+      setCurrentStep("reset");
     } catch (err: any) {
       VibrationManager.error();
 
@@ -257,21 +242,15 @@ const ForgotPasswordScreen = () => {
 
     setIsResetting(true);
     try {
-      // Complete the password reset
-      const resetResult = await signIn.resetPassword({
-        password: resetForm.password,
-      });
+      // Custom password reset - replace with your API call
+      // await yourService.resetPassword(email, resetForm.password);
 
-      if (resetResult.status === "complete") {
-        VibrationManager.success();
-        showToast(
-          "Password reset successful! You can now sign in with your new password."
-        );
-        router.push("/Home/SelectCorePujaType");
-      } else {
-        VibrationManager.error();
-        showToast("Password reset failed. Please try again.");
-      }
+      // For now, just simulate success
+      VibrationManager.success();
+      showToast(
+        "Password reset successful! You can now sign in with your new password."
+      );
+      router.push("/auth/login");
     } catch (err: any) {
       VibrationManager.error();
 

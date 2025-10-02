@@ -1,11 +1,33 @@
-import { useRef, useState } from "react";
-import { Animated } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Animated, Keyboard, Platform } from "react-native";
 
 // Reusable toast hook for showing transient messages with animation
 export function useToast() {
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const toastAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+      (event) => {
+        setKeyboardHeight(event.endCoordinates.height);
+      }
+    );
+
+    const keyboardDidHideListener = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+      () => {
+        setKeyboardHeight(0);
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener?.remove();
+      keyboardDidHideListener?.remove();
+    };
+  }, []);
 
   const showToast = (message: string) => {
     setToastMessage(message);
@@ -30,6 +52,7 @@ export function useToast() {
     toastVisible,
     toastMessage,
     toastAnim,
+    keyboardHeight,
     showToast,
     setToastVisible,
     setToastMessage,

@@ -2,7 +2,6 @@ import { colorCombinations } from "@/constants/Colors";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/UserContext";
 import { VibrationManager } from "@/utils/Vibrate";
-import { useAuth as useClerkAuth } from "@clerk/clerk-expo";
 import React, { useEffect, useState } from "react";
 import {
   Animated,
@@ -20,8 +19,7 @@ const isWeb = Platform.OS === "web";
 
 export default function SettingsScreen() {
   const { switchTheme, theme } = useTheme();
-  const { user, isSignedIn } = useAuth();
-  const { signOut } = useClerkAuth();
+  const { user, isLoggedIn, logout } = useAuth();
   const themeIndexByname = colorCombinations.findIndex(
     (x) => x.name === theme.name
   );
@@ -85,7 +83,7 @@ export default function SettingsScreen() {
         </View>
 
         {/* ============ PROFILE SECTION ============ */}
-        {isSignedIn && user && (
+        {isLoggedIn && user && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Profile</Text>
             <View
@@ -175,7 +173,7 @@ export default function SettingsScreen() {
                 ]}
                 onPress={async () => {
                   try {
-                    await signOut();
+                    await logout();
                     VibrationManager.success();
                     showToast("Logged out successfully");
                   } catch {
