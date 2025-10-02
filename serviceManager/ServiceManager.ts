@@ -148,6 +148,7 @@ class ServiceManager {
     const url = this.mURL("api/auth/login");
 
     try {
+      alert(this._baseURL);
       const response: any = await axios.post(url, props, {
         withCredentials: true, // Enable cookies for this request
       });
