@@ -1,11 +1,11 @@
 {
   "data": [
     {
-      "core.id": "hanuman_8f3a2",
-      "core.className": "templeList",
-      "core.name": "The Birth Place of Hanuman - Anjanadri Hills (Kishkinda)",
-      "core.startPrice": 500,
-      "core.description": [
+      "id": "hanuman_8f3a2",
+      "className": "templeList",
+      "name": "The Birth Place of Hanuman - Anjanadri Hills (Kishkinda)",
+      "startPrice": 500,
+      "description": [
         {
           "description": "Performing Puja at Hanuman's birthplace invokes his divine blessings, bringing strength, courage, and protection into your life. It helps in overcoming obstacles, improving mental clarity, and fostering spiritual growth."
         },
@@ -13,19 +13,19 @@
           "description": "If booked, the devotee's name and gotra will be performed during the puja. A video will be provided within 24 hours. Prasad can be booked separately at extra charge."
         }
       ],
-      "core.pujaDescription": {
+      "pujaDescription": {
         "lastDate": "22-10-2025",
         "description": "",
         "pujaName": "Name of puja to be performed",
         "metadata": ""
       },
-      "core.benifits": [
+      "benifits": [
         {
           "name": "general",
           "benifit": "Blessings of strength and protection"
         }
       ],
-      "core.temple": {
+      "temple": {
         "name": "Anjanadri Temple",
         "location": "Anjanadri Hills, Kishkinda",
         "image": "anjanadri.webp",
@@ -96,14 +96,14 @@
         },
         "extraInfo": {}
       },
-      "core.metaData": {}
+      "metaData": {}
     },
     {
-      "core.id": "mahalaxmi_c72b9",
-      "core.className": "templeList",
-      "core.name": "Kolhapur Mahalaxmi Puja",
-      "core.startPrice": 501,
-      "core.description": [
+      "id": "mahalaxmi_c72b9",
+      "className": "templeList",
+      "name": "Kolhapur Mahalaxmi Puja",
+      "startPrice": 501,
+      "description": [
         {
           "description": "Worshipping Kolhapur Mahalaxmi Puja is believed to bring prosperity, wealth, and harmony to the household. It helps remove financial obstacles and promotes overall well-being and happiness."
         },
@@ -111,17 +111,17 @@
           "description": "If booked, the devotee's name and gotra will be included. A video will be provided within 24 hours. Prasad can be booked separately at extra charge."
         }
       ],
-      "core.pujaDescription": {
+      "pujaDescription": {
         "lastDate": "22-10-2025",
         "description": ""
       },
-      "core.benifits": [
+      "benifits": [
         {
           "name": "general",
           "benifit": "Brings prosperity and wealth"
         }
       ],
-      "core.temple": {
+      "temple": {
         "name": "Kolhapur Mahalaxmi Temple",
         "location": "Kolhapur",
         "image": "kolhapurMahalaxmi.jpg",
@@ -192,14 +192,14 @@
         },
         "extraInfo": {}
       },
-      "core.metaData": {}
+      "metaData": {}
     },
     {
-      "core.id": "dattatraya_a41d7",
-      "core.className": "templeList",
-      "core.name": "Ghanagapur Dattatraya Puja",
-      "core.startPrice": 501,
-      "core.description": [
+      "id": "dattatraya_a41d7",
+      "className": "templeList",
+      "name": "Ghanagapur Dattatraya Puja",
+      "startPrice": 501,
+      "description": [
         {
           "description": "Performing Puja at the holy Ghanagapur Dattatraya Temple is believed to remove karmic obstacles and bring balance to mind, body, and spirit. Lord Dattatreya blesses devotees with wisdom, peace of mind, and spiritual growth."
         },
@@ -207,14 +207,14 @@
           "description": "Your name and gotra will be respectfully chanted during the puja. A personalized video will be shared within 24 hours."
         }
       ],
-      "core.pujaDescription": {
+      "pujaDescription": {
         "lastDate": "22-10-2025",
         "description": ""
       },
-      "core.benifits": [
+      "benifits": [
         { "name": "general", "benifit": "Removes karmic obstacles" }
       ],
-      "core.temple": {
+      "temple": {
         "name": "Dattatraya Temple",
         "location": "Ghanagapur",
         "image": "Gaangapur.jpg",
@@ -285,14 +285,14 @@
         },
         "extraInfo": {}
       },
-      "core.metaData": {}
+      "metaData": {}
     },
     {
-      "core.id": "tuljapur_0e8f1",
-      "core.className": "templeList",
-      "core.name": "Tuljapur Ambha Bhavani Puja",
-      "core.startPrice": 501,
-      "core.description": [
+      "id": "tuljapur_0e8f1",
+      "className": "templeList",
+      "name": "Tuljapur Ambha Bhavani Puja",
+      "startPrice": 501,
+      "description": [
         {
           "description": "Tuljapur Ambha Bhavani Puja is performed to seek the divine energy of Goddess Bhavani, known for courage and protection. This ritual invokes her blessings for inner strength, clarity of mind, and relief from struggles."
         },
@@ -300,14 +300,14 @@
           "description": "This service includes Vedic chanting, where your details are offered during the puja. A recorded video is provided for devotees unable to attend in person."
         }
       ],
-      "core.pujaDescription": {
+      "pujaDescription": {
         "lastDate": "22-10-2025",
         "description": ""
       },
-      "core.benifits": [
+      "benifits": [
         { "name": "general", "benifit": "Brings strength and stability" }
       ],
-      "core.temple": {
+      "temple": {
         "name": "Tuljapur Ambha Bhavani Temple",
         "location": "Tuljapur",
         "image": "shree-tulja-bhavani-temple-the-shakti-peetha-of-tuljapur-and-its-rich-historical-egacy.jpg",
@@ -378,14 +378,14 @@
         },
         "extraInfo": {}
       },
-      "core.metaData": {}
+      "metaData": {}
     },
     {
-      "core.id": "raghavendra_puja_4d3c6",
-      "core.className": "templeList",
-      "core.name": "Raghavendra Swami Temple Puja",
-      "core.startPrice": 501,
-      "core.description": [
+      "id": "raghavendra_puja_4d3c6",
+      "className": "templeList",
+      "name": "Raghavendra Swami Temple Puja",
+      "startPrice": 501,
+      "description": [
         {
           "description": "Performing Puja at Raghavendra Swami Temple brings peace of mind, success in career, and blessings for family welfare."
         },
@@ -393,14 +393,14 @@
           "description": "If booked, the devotee's name and gotra will be performed during the puja. A video will be provided within 24 hours. Prasad can be booked separately at extra charge."
         }
       ],
-      "core.pujaDescription": {
+      "pujaDescription": {
         "lastDate": "22-10-2025",
         "description": ""
       },
-      "core.benifits": [
+      "benifits": [
         { "name": "general", "benifit": "Peace of mind and family welfare" }
       ],
-      "core.temple": {
+      "temple": {
         "name": "Raghavendra Swami Temple",
         "location": "Mantralayam",
         "image": "swamiRaghvendraTemple.jpeg",
@@ -471,14 +471,14 @@
         },
         "extraInfo": {}
       },
-      "core.metaData": {}
+      "metaData": {}
     },
     {
-      "core.id": "raghavendra_maha_91e2f",
-      "core.className": "templeList",
-      "core.name": "Raghavendra Swami Maha Puja",
-      "core.startPrice": 501,
-      "core.description": [
+      "id": "raghavendra_maha_91e2f",
+      "className": "templeList",
+      "name": "Raghavendra Swami Maha Puja",
+      "startPrice": 501,
+      "description": [
         {
           "description": "Maha Puja of Raghavendra Swami is performed for deep spiritual benefits, protection from evil forces, and fulfillment of long-pending desires."
         },
@@ -486,14 +486,14 @@
           "description": "If booked, the devotee's name and gotra will be performed during the puja. A video will be provided within 24 hours. Prasad can be booked separately at extra charge."
         }
       ],
-      "core.pujaDescription": {
+      "pujaDescription": {
         "lastDate": "22-10-2025",
         "description": ""
       },
-      "core.benifits": [
+      "benifits": [
         { "name": "general", "benifit": "Spiritual upliftment and protection" }
       ],
-      "core.temple": {
+      "temple": {
         "name": "Raghavendra Swami Temple",
         "location": "Mantralayam",
         "image": "swamiRaghvendraTemple.jpeg",
@@ -565,7 +565,7 @@
         },
         "extraInfo": {}
       },
-      "core.metaData": {}
+      "metaData": {}
     }
   ]
 }

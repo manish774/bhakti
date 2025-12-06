@@ -1,13 +1,15 @@
 import FlowerRain from "@/components/FlowerRain";
 import SwipeButton from "@/components/SwipeButton";
 import { useAuth } from "@/context/UserContext";
-import { Core, TempleMetadata } from "@/serviceManager/ServiceManager";
+import ServiceManager, {
+  ApiTempleResponse,
+} from "@/serviceManager/ServiceManager";
 import { VibrationManager } from "@/utils/Vibrate";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
+// removed unused useRouter import
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
@@ -27,7 +29,6 @@ import {
 } from "react-native-paper";
 import SplashScreen from "../../components/SplashScreen";
 import { useTheme } from "../../context/ThemeContext";
-import rawJson from "../Data/raw.json";
 import AuthScreen from "../auth/login";
 import { createStyles } from "../styles";
 import { imageMap, pujaOptions, RootStackParamList } from "../utils/utils";
@@ -98,14 +99,23 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [visibleCount, setVisibleCount] = useState(6);
-  const router = useRouter();
+  // router removed - not used with new data shape
   const navigation = useNavigation<NavigationProps>();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef<FlatList>(null);
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const { isLoaded, isLoggedIn, isSignedIn, corePujaType } = useAuth();
-
+  const service = ServiceManager.getInstance();
+  const [typeData, setTypeData] = useState<ApiTempleResponse[]>([]);
+  const [pageLimit, setPageLimit] = useState<{ page: number; limit: number }>({
+    page: 1,
+    limit: 2,
+  });
+  // Use a ref to store the initial limit so the initial fetch effect
+  // doesn't need to depend on the pageLimit object (avoids overwriting
+  // the list when pageLimit.page is incremented).
+  const initialLimitRef = useRef(pageLimit.limit);
   // Check if it's the first launch
   useEffect(() => {
     const checkFirstLaunch = async () => {
@@ -131,6 +141,18 @@ export default function Home() {
     checkFirstLaunch();
   }, []);
 
+  useEffect(() => {
+    // Fetch first page once when user is logged in. Use the initial limit
+    // from the ref so this effect does not re-run when pageLimit.page changes.
+    if (!isLoggedIn) return;
+    service
+      .fetchAllTemples({ page: 1, limit: initialLimitRef.current })
+      .then((res) => {
+        // fetchAllTemples returns ApiTempleResponse[] directly
+        setTypeData(res?.data?.data as ApiTempleResponse[]);
+      });
+  }, [isLoggedIn, service]);
+
   // Handle splash screen finish
   const handleSplashFinish = useCallback(() => {
     setShowSplash(false);
@@ -149,33 +171,34 @@ export default function Home() {
   );
 
   // Process data once and memoize
-  const allData: TempleMetadata[] = useMemo(() => {
-    const metadata: TempleMetadata[] = rawJson?.data as TempleMetadata[];
-    if (!metadata || !Array.isArray(metadata)) {
-      console.log("No data found in rawJson");
-      return [];
-    }
+  // const templeData: TempleMetadata[] = useMemo(() => {
+  //   const metadata: TempleMetadata[] = rawJson?.data as TempleMetadata[];
+  //   if (!metadata || !Array.isArray(metadata)) {
+  //     console.log("No data found in rawJson");
+  //     return [];
+  //   }
 
-    return metadata;
-  }, []);
+  //   return metadata;
+  // }, []);
 
   // Filter data based on search
   const filteredData = useMemo(() => {
     if (!searchQuery.trim()) {
-      return allData;
+      return typeData;
     }
 
     const query = searchQuery.toLowerCase().trim();
-    return allData.filter((item) => {
+    // Basic filter on temple name or location
+    return typeData.filter((t) => {
       return (
-        item[Core.Name].toLowerCase().includes(query) ||
-        JSON.stringify(item?.[Core.Description])
-          ?.toLowerCase()
-          .includes(query) ||
-        item?.[Core.Temple].location.toLowerCase().includes(query)
+        (t.name && t.name.toLowerCase().includes(query)) ||
+        (t.location && t.location.toLowerCase().includes(query)) ||
+        (t.packages || [])
+          .map((p) => p.name?.toLowerCase())
+          .some((n) => n?.includes(query))
       );
     });
-  }, [allData, searchQuery]);
+  }, [searchQuery, typeData]);
 
   // Get visible data
   const visibleData = useMemo(() => {
@@ -212,47 +235,55 @@ export default function Home() {
   }, [searchQuery]);
 
   // Load more items
-  const loadMore = useCallback(() => {
-    if (isLoading || visibleCount >= filteredData.length) {
+  const loadMore = useCallback(async () => {
+    // guard to avoid duplicate loads
+    if (isLoading) {
       return;
     }
 
     setIsLoading(true);
     VibrationManager.lightImpact();
+    const data = await service.fetchAllTemples({
+      page: pageLimit.page + 1,
+      limit: pageLimit.limit,
+    });
 
-    setTimeout(() => {
-      setVisibleCount((prev) => Math.min(prev + 6, filteredData.length));
-      setIsLoading(false);
-    }, 300);
-  }, [isLoading, visibleCount, filteredData.length]);
+    setTypeData((prevData) => [
+      ...prevData,
+      ...(data?.data?.data as ApiTempleResponse[]),
+    ]);
+    setPageLimit((prev) => ({ page: prev.page + 1, limit: prev.limit }));
+    setVisibleCount((prevCount) => prevCount + 6);
+    setIsLoading(false);
+  }, [isLoading, pageLimit.page, pageLimit.limit, service]);
 
   // Handle end reached
   const handleEndReached = useCallback(() => {
-    if (visibleCount < filteredData.length && !isLoading) {
+    if (!isLoading) {
       loadMore();
     } else {
       VibrationManager.lightImpact();
     }
-  }, [visibleCount, filteredData.length, isLoading, loadMore]);
+  }, [isLoading, loadMore]);
 
   // Handle booking
   const handleBooking = useCallback(
-    (item: TempleMetadata) => {
+    (item: ApiTempleResponse) => {
       VibrationManager.selection();
       // router.push({
       //   pathname: "/Description/[id]",
       //   params: { id: item?.[Core.id] },
       // });
       navigation.navigate("Description", {
-        id: item?.[Core.id],
+        id: item?._id,
       });
     },
-    [router]
+    [navigation]
   );
 
   // Render item with proper animation
   const renderItem = useCallback(
-    ({ item }: { item: TempleMetadata }) => {
+    ({ item }: { item: ApiTempleResponse }) => {
       return (
         <View style={[styles.cardContainer]}>
           <Animated.View style={{ opacity: fadeAnim }}>
@@ -262,10 +293,10 @@ export default function Home() {
             >
               {/* Hero Image Section */}
               <View style={styles.imageSection}>
-                {item?.[Core.Temple].image ? (
+                {item?.image ? (
                   <>
                     <Image
-                      source={imageMap[item?.[Core.Temple].image]}
+                      source={imageMap[item.image]}
                       style={styles.cardImage}
                       resizeMode="cover"
                     />
@@ -279,7 +310,11 @@ export default function Home() {
                         style={styles.dateChip}
                         textStyle={styles.dateChipText}
                       >
-                        Until {item?.[Core.PujaDescription].lastDate}
+                        {item.updatedAt
+                          ? `Updated ${new Date(
+                              item.updatedAt
+                            ).toLocaleDateString()}`
+                          : ""}
                       </Chip>
                     </View>
                   </>
@@ -306,27 +341,31 @@ export default function Home() {
                     style={styles.cardTitle}
                     numberOfLines={2}
                   >
-                    {item?.[Core.Name]}
+                    {item?.name}
                   </Text>
                   <View style={styles.templeInfo}>
                     <Text style={styles.templeName} numberOfLines={1}>
-                      {item?.[Core.Temple]?.name}
+                      {item?.location}
                     </Text>
-                    <View style={styles.locationRow}>
-                      <Text style={styles.locationIcon}>📍</Text>
+                    {/* <View style={styles.locationRow}>
+                      <Text style={styles.locationIcon}>🏷️</Text>
                       <Text style={styles.location} numberOfLines={1}>
-                        {item?.[Core.Temple].location}
+                        {item?.packages?.[0]?.name}
                       </Text>
-                    </View>
+                    </View> */}
                   </View>
                 </View>
 
                 <View style={styles.priceSection}>
                   <Text style={styles.priceLabel}>Starting from</Text>
                   <Text style={styles.priceValue}>
-                    ₹{item?.[Core.StartPrice].toLocaleString("en-IN")}
+                    ₹
+                    {(item?.packages && item.packages.length
+                      ? Math.min(...item.packages.map((p) => p.price))
+                      : 0
+                    ).toLocaleString("en-IN")}
                   </Text>
-                  {item?.[Core.Temple].prasadDelivery?.included && (
+                  {item?.prasadDelivery?.included && (
                     <Chip
                       style={styles.prasadChip}
                       textStyle={styles.prasadChipText}
@@ -431,29 +470,6 @@ export default function Home() {
     );
   }, [searchQuery, styles]);
 
-  // Debug logging
-  useEffect(() => {
-    console.log("Debug Info:", {
-      totalItems: allData.length,
-      filteredItems: filteredData.length,
-      visibleItems: visibleData.length,
-      visibleCount,
-      searchQuery: `"${searchQuery}"`,
-      isLoading,
-      showSplash,
-      isFirstLaunch,
-    });
-  }, [
-    allData.length,
-    filteredData.length,
-    visibleData.length,
-    visibleCount,
-    searchQuery,
-    isLoading,
-    showSplash,
-    isFirstLaunch,
-  ]);
-
   // Don't render anything while checking first launch status
   if (isFirstLaunch === null) {
     return (
@@ -507,7 +523,7 @@ export default function Home() {
             ref={flatListRef}
             data={visibleData}
             renderItem={renderItem}
-            keyExtractor={(item) => `${item?.[Core.id]}-${searchQuery}`}
+            keyExtractor={(item) => `${item?._id}-${searchQuery}`}
             numColumns={numColumns}
             ListHeaderComponent={HeaderComponent}
             ListFooterComponent={FooterComponent}

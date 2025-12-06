@@ -199,15 +199,18 @@ const AuthScreen: React.FC = () => {
         email: loginForm.loginEmail,
         password: loginForm.loginPassword,
       });
-      console.log(result.data._id);
-      if (result.data._id) {
+      console.log(result);
+      if (result.data.userdetail._id) {
         VibrationManager.success();
         showToast("Login successful!");
 
         await authLogin({
-          id: result.data.id || result.data._id || loginForm.loginEmail,
-          name: result.data.name,
-          email: result.data.email,
+          id:
+            result.data.userdetail._id ||
+            result.data._id ||
+            loginForm.loginEmail,
+          name: result.data.userdetail.name,
+          email: result.data.userdetail.email,
         });
 
         if (returnTo) {
@@ -537,6 +540,7 @@ const AuthScreen: React.FC = () => {
     {
       id: "loginEmail",
       placeholder: "Enter your email",
+      value: "manishranbir774@gmail.com",
       icon: "mail-outline",
       keyboardType: "email-address",
       autoCapitalize: "none",
@@ -547,6 +551,7 @@ const AuthScreen: React.FC = () => {
     },
     {
       id: "loginPassword",
+      value: "Hello1*#",
       placeholder: "Create password",
       icon: "lock-closed-outline",
       secureTextEntry: !showPassword,

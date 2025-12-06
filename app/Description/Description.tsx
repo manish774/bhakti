@@ -1,7 +1,10 @@
 import ExpandablePlanSelector from "@/components/ExpandableSelector/ExpandableSelector";
 import Model from "@/components/Model";
 import { useAuth } from "@/context/UserContext";
-import { Core, TempleMetadata } from "@/serviceManager/ServiceManager";
+import ServiceManager, {
+  Core,
+  TempleMetadata,
+} from "@/serviceManager/ServiceManager";
 import { VibrationManager } from "@/utils/Vibrate";
 import { RouteProp } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -10,7 +13,6 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Dimensions, Image, Platform, ScrollView, View } from "react-native";
 import { Button, Chip, Divider, Snackbar, Text } from "react-native-paper";
 import { useTheme } from "../../context/ThemeContext";
-import rawJson from "../Data/raw.json";
 
 import { StackNavigationProp } from "@react-navigation/stack";
 import { imageMap, RootStackParamList } from "../utils/utils";
@@ -44,10 +46,21 @@ export const Description: React.FC<Props> = ({ route, navigation }) => {
   const [snackVisible, setSnackVisible] = useState(false);
   const [snackMessage, setSnackMessage] = useState<string>("");
   const { isLoggedIn } = useAuth();
+  const [item, setItem] = useState<TempleMetadata | null>(null);
+  const service = ServiceManager.getInstance();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const item = rawJson.data.find((d: any) => d?.[Core.id] === idParam);
   const { theme } = useTheme();
   const styles = createStyles({ theme, maxWidth, platform: Platform });
+
+  useEffect(() => {
+    setIsLoading(true);
+    service.fetchTempleData(idParam as string).then((data) => {
+      console.log(data?.data?.data, "fetched data....");
+      setItem(data?.data?.data);
+      setIsLoading(false);
+    });
+  }, []);
 
   const transformedPlans = useMemo(() => {
     const packages = item?.[Core.Temple]?.packages;
@@ -116,10 +129,10 @@ export const Description: React.FC<Props> = ({ route, navigation }) => {
           colors={[theme.background, theme.card]}
           style={styles.headerGradient}
         >
-          {item?.[Core.Temple].image ? (
+          {item?.image ? (
             <View style={styles.imageContainer}>
               <Image
-                source={imageMap?.[item?.[Core.Temple].image]}
+                source={imageMap?.[item?.image]}
                 style={styles.heroImage}
                 resizeMode="cover"
               />
@@ -147,7 +160,7 @@ export const Description: React.FC<Props> = ({ route, navigation }) => {
                 style={styles.locationChip}
                 textStyle={styles.locationChipText}
               >
-                {item?.[Core.Temple].location}
+                {item?.location}
               </Chip>
             </View>
           </View>
@@ -175,9 +188,7 @@ export const Description: React.FC<Props> = ({ route, navigation }) => {
                 <Text style={styles.infoIcon}>📦</Text>
                 <Text style={styles.infoLabel}>Prasad</Text>
                 <Text style={styles.infoValue}>
-                  {item?.[Core.Temple].prasadDelivery?.included
-                    ? "Included"
-                    : "Not Included"}
+                  {item?.prasadDelivery?.included ? "Included" : "Not Included"}
                 </Text>
               </View>
             </View>
@@ -228,22 +239,18 @@ export const Description: React.FC<Props> = ({ route, navigation }) => {
                   <Text style={styles.panditAvatarText}>🙏</Text>
                 </View>
                 <View style={styles.panditInfo}>
-                  <Text style={styles.panditName}>
-                    {item?.[Core.Temple].pandit.name}
-                  </Text>
+                  <Text style={styles.panditName}>{item?.pandit.name}</Text>
                   <Text style={styles.panditExperience}>
                     Experienced Temple Priest
                   </Text>
                 </View>
               </View>
-              <Text style={styles.panditDescription}>
-                {item?.[Core.Temple].pandit.about}
-              </Text>
+              <Text style={styles.panditDescription}>{item?.pandit.about}</Text>
             </View>
           </View>
 
           {/* Prasad Delivery Info */}
-          {item?.[Core.Temple].prasadDelivery?.included && (
+          {item?.prasadDelivery?.included && (
             <View style={styles.section}>
               <Text variant="titleLarge" style={styles.sectionHeader}>
                 🎁 Prasad Delivery
@@ -266,7 +273,7 @@ export const Description: React.FC<Props> = ({ route, navigation }) => {
                     <View>
                       <Text style={styles.deliveryLabel}>Delivery Time</Text>
                       <Text style={styles.deliverySubtext}>
-                        {item?.[Core.Temple].prasadDelivery.deliveryTime}
+                        {item?.prasadDelivery.deliveryTime}
                       </Text>
                     </View>
                   </View>
@@ -277,7 +284,7 @@ export const Description: React.FC<Props> = ({ route, navigation }) => {
                     <View>
                       <Text style={styles.deliveryLabel}>Delivery Charges</Text>
                       <Text style={styles.deliverySubtext}>
-                        {item?.[Core.Temple].prasadDelivery.prasadCharge}
+                        {item?.prasadDelivery.prasadCharge}
                       </Text>
                     </View>
                   </View>
@@ -350,9 +357,9 @@ export const Description: React.FC<Props> = ({ route, navigation }) => {
                 nos={3}
                 isFormCompleted
                 setShowModel={setShowModel}
-                templeName={item?.["core.temple"]?.name}
+                templeName={item?.temple?.name}
                 amount="1000"
-                lastDate={item?.["core.pujaDescription"]?.lastDate}
+                lastDate={item?.pujaDescription?.lastDate}
               />
             </View>
           }
@@ -369,13 +376,11 @@ export const Description: React.FC<Props> = ({ route, navigation }) => {
             <PrasadamForm
               isFormCompleted
               setShowModel={setShowPrasadamModel}
-              templeName={item?.["core.temple"]?.name}
-              amount={item?.[
-                "core.temple"
-              ].prasadDelivery?.prasadCharge?.toString()}
+              templeName={item?.temple?.name}
+              amount={item?.temple?.prasadDelivery?.prasadCharge?.toString()}
               nos={1}
-              lastDate={item?.["core.pujaDescription"].lastDate}
-              pujaName={item?.["core.pujaDescription"].pujaName || ""}
+              lastDate={item?.pujaDescription?.lastDate}
+              pujaName={item?.pujaDescription?.pujaName || ""}
             />
           }
           isVisible={showPrasadamModel}

@@ -2,15 +2,15 @@ import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
 export enum Core {
-  id = "core.id",
-  ClassName = "core.className",
-  Name = "core.name",
-  Description = "core.description",
-  PujaDescription = "core.pujaDescription",
-  Benifits = "core.benifits",
-  Temple = "core.temple",
-  MetaData = "core.metaData",
-  StartPrice = "core.startPrice",
+  id = "id",
+  ClassName = "className",
+  Name = "name",
+  Description = "description",
+  PujaDescription = "pujaDescription",
+  Benifits = "benifits",
+  Temple = "temple",
+  MetaData = "metaData",
+  StartPrice = "startPrice",
 }
 
 export interface TempleMetadata {
@@ -58,6 +58,47 @@ export interface TempleMetadata {
   [Core.MetaData]: Record<string, any>;
 }
 
+// New interface matching the actual API response structure
+export interface ApiTempleResponse {
+  _id: string;
+  name: string;
+  location: string;
+  image: string;
+  packages: {
+    id: string;
+    name: string;
+    numberOfPerson: number;
+    title: string;
+    price: number;
+    description: {
+      id: number;
+      detail: string;
+    }[];
+    isPopular: boolean;
+  }[];
+  prasadDelivery: {
+    included: boolean;
+    deliveryTime: string;
+    prasadCharge: number;
+  };
+  pandit: {
+    name: string;
+    about: string;
+  };
+  extraInfo: {
+    templeTiming: string;
+    famousFor: string;
+    contact: {
+      phone: string;
+      email: string;
+    };
+    website: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
 type SignupProps = {
   name: string;
   email: string;
@@ -73,20 +114,19 @@ type SignupResp = {
 
 class ServiceManager {
   private static instance: ServiceManager;
-  private templeList: TempleMetadata[];
+  private templeList: ApiTempleResponse[];
   private _baseURL: string;
+  public _token: string | null = null;
 
   private constructor() {
     this.templeList = [];
-    // Use environment variable or fallback to localhost
+    // Use environment variable or fallback
     this._baseURL =
-      process.env.EXPO_PUBLIC_API_BASE_URL ||
-      "http://srv1038411.hstgr.cloud:8080/";
-    console.log("ServiceManager initialized with base URL:", this._baseURL);
+      process.env.EXPO_PUBLIC_API_BASE_URL || "https://api.jalsuvidha.com/";
 
     // Configure axios defaults
     axios.defaults.headers.common["Content-Type"] = "application/json";
-
+    axios.defaults.timeout = 30000; // 30 seconds timeout
     // Add request interceptor to include auth token
     axios.interceptors.request.use(
       (config) => {
@@ -107,10 +147,6 @@ class ServiceManager {
         return response;
       },
       (error) => {
-        // Handle 401 unauthorized - clear token
-        if (error.response?.status === 401) {
-          this.clearAuthToken();
-        }
         return Promise.reject(error);
       }
     );
@@ -147,19 +183,34 @@ class ServiceManager {
   public async login(props: { email: string; password: string }): Promise<any> {
     const url = this.mURL("api/auth/login");
 
+    console.log(this._baseURL, "login url");
     try {
-      alert(this._baseURL);
+      console.log("Attempting login to :", url);
       const response: any = await axios.post(url, props, {
         withCredentials: true, // Enable cookies for this request
       });
-      console.log(response.data);
+      console.warn(response.data, "response token");
+      // set token in a variable
+      if (response.data && response.data.data.token) {
+        // Styled console output (CSS styling works in browser devtools; not in React Native / Node)
+        console.log(
+          "%cAuth Token:%c %s",
+          "background:#222;color:#fff;padding:4px 8px;border-radius:3px;font-weight:700;",
+          "color:#7fffd4;padding-left:8px;",
+          response.data.token
+        );
+        await this.setAuthToken(response.data.data.token);
+      }
+      console.log("Login successful:", response.data);
       return response.data;
     } catch (error: any) {
-      throw error;
+      console.error("Login failed:", error);
+      const userFriendlyMessage = this.getNetworkErrorMessage(error);
+      throw new Error(userFriendlyMessage);
     }
   }
 
-  public async getTempleList(): Promise<TempleMetadata[]> {
+  public async getTempleList(): Promise<ApiTempleResponse[]> {
     return this.templeList;
   }
 
@@ -170,9 +221,12 @@ class ServiceManager {
 
     try {
       const response: any = await axios.post(url, props);
+      console.log("Signup successful:", response.data);
       return response.data;
     } catch (error: any) {
-      throw error;
+      console.error("Signup failed:", error);
+      const userFriendlyMessage = this.getNetworkErrorMessage(error);
+      throw new Error(userFriendlyMessage);
     }
   }
 
@@ -206,19 +260,54 @@ class ServiceManager {
 
   // Test method to check if server is reachable
   public async testConnection(): Promise<boolean> {
-    try {
-      console.log("Testing connection to:", this._baseURL);
-      const headers = await this.getAuthHeaders();
-      const response = await axios.get(this._baseURL + "health", {
-        timeout: 5000,
-        headers,
-      });
-      console.log("Connection test successful:", response.status);
-      return true;
-    } catch (error: any) {
-      console.error("Connection test failed:", error.message);
-      return false;
+    const testUrls = [
+      this._baseURL + "health",
+      this._baseURL + "api/health",
+      this._baseURL,
+      this._baseURL + "api",
+    ];
+
+    console.log("=== Testing Server Connection ===");
+    console.log("Base URL:", this._baseURL);
+
+    for (const testUrl of testUrls) {
+      try {
+        console.log(`Testing: ${testUrl}`);
+        const headers = await this.getAuthHeaders();
+        const response = await axios.get(testUrl, {
+          timeout: 10000,
+          headers,
+        });
+        console.log(`✅ SUCCESS: ${testUrl} - Status: ${response.status}`);
+        console.log("Response data:", response.data);
+        return true;
+      } catch (error: any) {
+        console.log(`❌ FAILED: ${testUrl}`);
+        console.log("Error details:", {
+          message: error.message,
+          code: error.code,
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          isNetworkError: error.code === "NETWORK_ERROR" || !error.response,
+        });
+      }
     }
+
+    console.log("All connection tests failed");
+    return false;
+  }
+
+  // Helper method to provide user-friendly error messages
+  private getNetworkErrorMessage(error: any): string {
+    if (error.code === "NETWORK_ERROR" || !error.response) {
+      return "Network connection failed. Please check your internet connection and try again.";
+    }
+
+    return (
+      error.response?.data?.error?.message ||
+      error.message ||
+      "An unexpected error occurred."
+    );
   }
 
   public async sendOTP(props: { email: string }): Promise<any> {
@@ -237,6 +326,7 @@ class ServiceManager {
 
   public async setAuthToken(token: string): Promise<void> {
     try {
+      this._token = token;
       await SecureStore.setItemAsync(this.TOKEN_KEY, token);
       console.log("Auth token stored securely");
     } catch (error) {
@@ -248,7 +338,7 @@ class ServiceManager {
   public async getAuthToken(): Promise<string | null> {
     try {
       const token = await SecureStore.getItemAsync(this.TOKEN_KEY);
-      return token;
+      return this._token || token;
     } catch (error) {
       console.log("Error getting auth token:", error);
       return null;
@@ -285,6 +375,45 @@ class ServiceManager {
       // Even if logout fails on server, clear local token
       await this.clearAuthToken();
       throw error;
+    }
+  }
+
+  //Templedata
+
+  public async fetchTempleData(templeId: string): Promise<TempleMetadata> {
+    const url = this.mURL(`api/admin/temples/${templeId}`);
+    try {
+      const headers = await this.getAuthHeaders();
+      const response = await axios.get(url, { headers });
+      return response.data as TempleMetadata;
+    } catch (error: any) {
+      console.error("Fetch temple data failed :", error);
+      const userFriendlyMessage = this.getNetworkErrorMessage(error);
+      throw new Error(userFriendlyMessage);
+    }
+  }
+
+  public async fetchAllTemples({
+    limit,
+    page,
+  }: {
+    limit: number;
+    page: number;
+  }): Promise<ApiTempleResponse[]> {
+    const url = this.mURL(`api/admin/temples?limit=${limit}&page=${page}`);
+    try {
+      const headers = await this.getAuthHeaders();
+
+      console.log(headers, "headers");
+      const response = await axios.get(url, { headers });
+      // The API returns an array directly, not wrapped in a data property
+      this.templeList = response.data as ApiTempleResponse[];
+      console.log(response.data, "temple data");
+      return this.templeList;
+    } catch (error: any) {
+      console.error("Fetch all temples failed :", error);
+      const userFriendlyMessage = this.getNetworkErrorMessage(error);
+      throw new Error(userFriendlyMessage);
     }
   }
 }
