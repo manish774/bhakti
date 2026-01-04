@@ -27,7 +27,7 @@ interface Plan {
 interface ExpandablePlanSelectorProps {
   plans: Plan[];
   selectedPlan?: string;
-  onPlanSelect: (planId: string) => void;
+  onPlanSelect: (plan: Record<string, any>) => void;
 }
 
 const MAX_EXPAND_HEIGHT = 380;
@@ -153,7 +153,7 @@ const ExpandablePlanSelector: React.FC<ExpandablePlanSelectorProps> = ({
 
               <Pressable
                 style={styles.right}
-                onPress={() => onPlanSelect(plan.id)}
+                onPress={() => onPlanSelect(plan)}
               >
                 <Text style={styles.price}>
                   ₹{plan.price.toLocaleString("en-IN")}
@@ -338,6 +338,7 @@ const createStyles = (theme: any) =>
       flexDirection: "row",
       alignItems: "flex-start",
       marginBottom: 8,
+      borderRadius: 4,
     } as ViewStyle,
     bullet: {
       width: 8,

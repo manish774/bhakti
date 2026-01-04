@@ -24,7 +24,7 @@ export type RootStackParamList = {
   Description: { id: string | number };
   ForgotPassword: any;
   login: any;
-  bookingPage: { id: string; selectedDevotee: string };
+  bookingPage: { id: string; selectedDevotee: Record<string, any> | null };
 };
 
 export enum ICorePujaType {

@@ -9,6 +9,7 @@ export const imageMap: Record<string, any> = {
   "Gaangapur.jpg": require("../../assets/gods/Gaangapur.jpg"),
   "shree-tulja-bhavani-temple-the-shakti-peetha-of-tuljapur-and-its-rich-historical-egacy.jpg": require("../../assets/gods/shree-tulja-bhavani-temple-the-shakti-peetha-of-tuljapur-and-its-rich-historical-egacy.jpg"),
   "swamiRaghvendraTemple.jpeg": require("../../assets/gods/swamiRaghvendraTemple.jpeg"),
+  "default.jpg": require("../../assets/temple/default.jpg"),
 };
 
 export function getImage(filename?: string) {

@@ -1,12 +1,10 @@
 import Stepper from "@/components/stepper/Stepper";
 import { useTheme } from "@/context/ThemeContext";
-import { Core } from "@/serviceManager/ServiceManager";
 import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import React from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Card } from "react-native-paper";
-import rawJson from "../Data/raw.json";
 import { RootStackParamList } from "../utils/utils";
 import { createPackageSteps } from "./utils";
 
@@ -26,12 +24,11 @@ const BookPuja: React.FC<Props> = ({ route }) => {
   const styles = createStyles(theme);
 
   const { id, selectedDevotee } = route.params;
-  const item = rawJson.data.find((d: any) => d?.[Core.id] === id);
-  const temple = item?.["core.temple"];
-  const puja = item?.["core.pujaDescription"];
-  const selectedDevoteeType = temple?.packages?.find(
-    (x) => x.id === selectedDevotee
-  );
+  //const item = rawJson.data.find((d: any) => d?.[Core.id] === id);
+  const temple = selectedDevotee;
+  const puja = selectedDevotee?.["core.pujaDescription"];
+
+  console.warn(temple, id, "hahahah");
 
   const HeaderContent = () => (
     <View style={styles.headerContainer}>
@@ -85,9 +82,7 @@ const BookPuja: React.FC<Props> = ({ route }) => {
         <Card style={styles.headerCard} elevation={4}>
           <Card.Content>
             <Stepper
-              steps={createPackageSteps(
-                selectedDevoteeType?.numberOfPerson as number
-              )}
+              steps={createPackageSteps(temple?.numberOfPerson as number)}
               onSubmit={(data) => {
                 alert(JSON.stringify(data));
               }}

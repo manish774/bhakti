@@ -14,6 +14,7 @@ import {
 } from "react-native";
 // import { ICorePujaType, PujaOption } from "../auth/utils";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { Button } from "react-native-paper";
 import {
   ICorePujaType,
   PujaOption,
@@ -37,7 +38,7 @@ const SelectCorePujaType: React.FC<PujaTypeSelectorProps> = ({
   const { theme } = useTheme();
   const styles = createStyles(theme);
   const navigation = useNavigation<NavigationProps>();
-
+  const { logout } = useAuth();
   const handlePress = (type: ICorePujaType): void => {
     setSelectedType(type);
   };
@@ -159,6 +160,15 @@ const SelectCorePujaType: React.FC<PujaTypeSelectorProps> = ({
               : "Please Select an Option"}
           </Text>
         </TouchableOpacity>
+        <Button
+          onPress={async () => {
+            try {
+              await logout();
+            } catch {}
+          }}
+        >
+          logout
+        </Button>
       </ScrollView>
     </SafeAreaView>
   );

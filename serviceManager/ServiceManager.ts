@@ -2,7 +2,7 @@ import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
 export enum Core {
-  id = "id",
+  id = "_id",
   ClassName = "className",
   Name = "name",
   Description = "description",
@@ -11,15 +11,15 @@ export enum Core {
   Temple = "temple",
   MetaData = "metaData",
   StartPrice = "startPrice",
+  image = "image",
+  location = "location",
 }
 
 export interface TempleMetadata {
   [Core.id]: string;
   [Core.ClassName]: string;
   [Core.Name]: string;
-  [Core.Description]: {
-    description: string;
-  }[];
+  [Core.Description]: string[];
   [Core.PujaDescription]: {
     lastDate: string;
     description: string;
@@ -31,31 +31,20 @@ export interface TempleMetadata {
     name: string;
     benifit: string;
   }[];
-  [Core.Temple]: {
-    name: string;
-    location: string;
-    image: string;
-    packages: {
-      id: string;
-      title: string;
-      isPopular: boolean;
-      name: string;
-      price: number;
-      description: { id: string | number; detail: string }[];
-    }[];
-    prasadDelivery: {
-      included: boolean;
-      deliveryTime: string;
-      prasadCharge: number;
-      deliveryCharge?: number;
-    };
-    pandit: {
-      name: string;
-      about: string;
-    };
-    extraInfo: Record<string, any>;
+  prasadDelivery: {
+    included: boolean;
+    deliveryTime: string;
+    prasadCharge: number;
+    deliveryCharge?: number;
   };
+  pandit: {
+    name: string;
+    about: string;
+  };
+  extraInfo: Record<string, any>;
   [Core.MetaData]: Record<string, any>;
+  [Core.image]: string;
+  [Core.location]: string;
 }
 
 // New interface matching the actual API response structure
@@ -385,7 +374,20 @@ class ServiceManager {
     try {
       const headers = await this.getAuthHeaders();
       const response = await axios.get(url, { headers });
-      return response.data as TempleMetadata;
+      return response.data.data.data as unknown as TempleMetadata;
+    } catch (error: any) {
+      console.error("Fetch temple data failed :", error);
+      const userFriendlyMessage = this.getNetworkErrorMessage(error);
+      throw new Error(userFriendlyMessage);
+    }
+  }
+
+  public async getTempleIds({ ids }: { ids: string[] }) {
+    const url = this.mURL(`api/admin/temples/getByIds`);
+    try {
+      const headers = await this.getAuthHeaders();
+      const response = await axios.post(url, { ids, headers });
+      return response.data.data.data as unknown as TempleMetadata;
     } catch (error: any) {
       console.error("Fetch temple data failed :", error);
       const userFriendlyMessage = this.getNetworkErrorMessage(error);
@@ -409,9 +411,22 @@ class ServiceManager {
       // The API returns an array directly, not wrapped in a data property
       this.templeList = response.data as ApiTempleResponse[];
       console.log(response.data, "temple data");
-      return this.templeList;
+      return this.templeList?.data?.data as ApiTempleResponse[];
     } catch (error: any) {
       console.error("Fetch all temples failed :", error);
+      const userFriendlyMessage = this.getNetworkErrorMessage(error);
+      throw new Error(userFriendlyMessage);
+    }
+  }
+
+  public async getPcakagesOfTemple(templeId: string) {
+    const url = this.mURL(`api/admin/temples/${templeId}/packages`);
+    try {
+      const headers = await this.getAuthHeaders();
+      const response = await axios.get(url, { headers });
+      return response.data.data.data as TempleMetadata;
+    } catch (error: any) {
+      console.error("Fetch temple data failed :", error);
       const userFriendlyMessage = this.getNetworkErrorMessage(error);
       throw new Error(userFriendlyMessage);
     }
