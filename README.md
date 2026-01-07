@@ -48,3 +48,14 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+## Auth expiry behavior
+
+- When the API returns 401 or 403 (expired/invalid token), the network interceptor will remove the stored `authToken` and emit an `authExpired` event.
+- `AuthProvider` subscribes to this event and performs `logout()` which clears local user data and updates auth state.
+- The app navigator renders the login stack when not signed in, so the user is redirected to the login screen automatically.
+
+Manual test:
+
+1. Ensure you have an auth token stored (logged-in).
+2. Call an endpoint that returns 403 (or modify the token to be invalid) and confirm the app clears auth and shows the login screen.

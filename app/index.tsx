@@ -22,51 +22,70 @@ function AppNavigator() {
   const { theme } = useTheme();
   const { isSignedIn } = useAuth();
 
+  // Render different stacks depending on auth status
   return (
     <Stack.Navigator>
-      <Stack.Screen
-        name="Home"
-        component={Home}
-        options={({ navigation }) => ({
-          headerRight: () => (
-            <Pressable
-              onPress={() => {
-                if (isSignedIn) {
-                  navigation.navigate("Settings");
-                } else {
-                  navigation.navigate("login");
-                }
-              }}
-            >
-              <Image
-                source={require("@/assets/images/settings.png")}
-                style={{ width: 30, height: 30, marginLeft: 8 }}
-              />
-            </Pressable>
-          ),
-          headerLeft: () => (
-            <Pressable
-              onPress={() => {
-                if (isSignedIn) {
-                  navigation.navigate("PujaType");
-                } else {
-                  navigation.navigate("login");
-                }
-              }}
-            >
-              <Ionicons name="ellipsis-vertical" size={24} color={theme.text} />
-            </Pressable>
-          ),
-        })}
-      />
+      {isSignedIn ? (
+        <>
+          <Stack.Screen
+            name="Home"
+            component={Home}
+            options={({ navigation }) => ({
+              headerRight: () => (
+                <Pressable
+                  onPress={() => {
+                    if (isSignedIn) {
+                      navigation.navigate("Settings");
+                    } else {
+                      navigation.navigate("login");
+                    }
+                  }}
+                >
+                  <Image
+                    source={require("@/assets/images/settings.png")}
+                    style={{ width: 30, height: 30, marginLeft: 8 }}
+                  />
+                </Pressable>
+              ),
+              headerLeft: () => (
+                <Pressable
+                  onPress={() => {
+                    if (isSignedIn) {
+                      navigation.navigate("PujaType");
+                    } else {
+                      navigation.navigate("login");
+                    }
+                  }}
+                >
+                  <Ionicons
+                    name="ellipsis-vertical"
+                    size={24}
+                    color={theme.text}
+                  />
+                </Pressable>
+              ),
+            })}
+          />
 
-      <Stack.Screen name="Settings" component={SettingsScreen} options={{}} />
+          <Stack.Screen
+            name="Settings"
+            component={SettingsScreen}
+            options={{}}
+          />
 
-      <Stack.Screen name="Description" component={Description} />
-      <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-      <Stack.Screen name="login" component={AuthScreen} />
-      <Stack.Screen name="PujaType" component={SelectCorePujaType} />
-      <Stack.Screen name="bookingPage" component={BookPuja} />
+          <Stack.Screen name="Description" component={Description} />
+          <Stack.Screen name="PujaType" component={SelectCorePujaType} />
+          <Stack.Screen name="bookingPage" component={BookPuja} />
+        </>
+      ) : (
+        <>
+          <Stack.Screen name="login" component={AuthScreen} />
+          <Stack.Screen
+            name="ForgotPassword"
+            component={ForgotPasswordScreen}
+          />
+        </>
+      )}
     </Stack.Navigator>
   );
 }

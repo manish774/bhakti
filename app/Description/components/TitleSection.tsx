@@ -23,7 +23,8 @@ export default function TitleSection({ item, styles }: Props) {
           style={styles.locationChip}
           textStyle={styles.locationChipText}
         >
-          {item?.location}
+          {item?.location?.addressLine1} - {item?.location?.city}
+          {item?.location?.state}
         </Chip>
       </View>
     </View>

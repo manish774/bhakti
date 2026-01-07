@@ -39,7 +39,7 @@ const ExpandablePlanSelector: React.FC<ExpandablePlanSelectorProps> = ({
 }) => {
   const { theme } = useTheme();
   const [expandedPlan, setExpandedPlan] = useState<string | null>(null);
-
+  console.log(plans, "plans");
   const animRef = useRef<
     Record<
       string,

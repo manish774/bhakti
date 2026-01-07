@@ -1,9 +1,9 @@
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/UserContext";
+import { useCoreEvent } from "@/serviceManager/services/CoreEvent/useCoreEvent";
 import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import {
-  Dimensions,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -15,16 +15,9 @@ import {
 // import { ICorePujaType, PujaOption } from "../auth/utils";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Button } from "react-native-paper";
-import {
-  ICorePujaType,
-  PujaOption,
-  pujaOptions,
-  RootStackParamList,
-} from "../utils/utils";
+import { ICorePujaType, PujaOption, RootStackParamList } from "../utils/utils";
 
 type NavigationProps = NativeStackNavigationProp<RootStackParamList>;
-
-const { width } = Dimensions.get("window");
 
 interface PujaTypeSelectorProps {
   onSelection?: (selectedType: ICorePujaType) => void;
@@ -34,11 +27,25 @@ const SelectCorePujaType: React.FC<PujaTypeSelectorProps> = ({
   onSelection,
 }) => {
   const [selectedType, setSelectedType] = useState<ICorePujaType | null>(null);
-  const { setCorePujaType, isLoggedIn, corePujaType } = useAuth();
+  const { setCorePujaType, corePujaType } = useAuth();
   const { theme } = useTheme();
   const styles = createStyles(theme);
   const navigation = useNavigation<NavigationProps>();
   const { logout } = useAuth();
+
+  const { coreEvents } = useCoreEvent({ autoFetch: true });
+
+  console.log(coreEvents, "pp");
+  const options: PujaOption[] = (coreEvents || []).map((c) => ({
+    type: c.type as ICorePujaType,
+    title: c.title || "",
+    description: c.description || "",
+    icon: c.icon || "🙏",
+    color: c.color || "#CCCCCC",
+    shadowColor: c.shadowColor || "#CCCCCC",
+    visible: c.visible ?? true,
+  }));
+
   const handlePress = (type: ICorePujaType): void => {
     setSelectedType(type);
   };
@@ -47,10 +54,10 @@ const SelectCorePujaType: React.FC<PujaTypeSelectorProps> = ({
     if (navigation && typeof navigation.setOptions === "function") {
       navigation.setOptions({
         headerShown: false,
-        title: pujaOptions?.find((puja) => puja.type === corePujaType)?.title,
+        title: options?.find((puja) => puja.type === corePujaType)?.title,
       });
     }
-  }, [navigation, corePujaType]);
+  }, [navigation, corePujaType, options]);
 
   const handleConfirm = (): void => {
     if (selectedType) {
@@ -79,7 +86,7 @@ const SelectCorePujaType: React.FC<PujaTypeSelectorProps> = ({
 
         {/* Options */}
         <View style={styles.optionsContainer}>
-          {pujaOptions
+          {options
             .filter((x) => x.visible)
             .map((option: PujaOption, index: number) => (
               <TouchableOpacity

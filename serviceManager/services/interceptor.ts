@@ -1,6 +1,7 @@
 // apiClient.ts
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import AuthEventEmitter from "./AuthEvents";
 
 const apiClient = axios.create({
   baseURL: "https://api.jalsuvidha.com/", // Use proxy path in development
@@ -12,12 +13,16 @@ const apiClient = axios.create({
 
 // Request interceptor to add auth token
 apiClient.interceptors.request.use(
-  async (config) => {
-    const token = await AsyncStorage.getItem("authToken");
-    if (token) {
-      config.headers = { ...config.headers, Authorization: `Bearer ${token}` };
-    }
-    return config;
+  (config: any) => {
+    return AsyncStorage.getItem("authToken").then((token) => {
+      if (token) {
+        config.headers = {
+          ...config.headers,
+          Authorization: `Bearer ${token}`,
+        };
+      }
+      return config;
+    });
   },
   (error) => Promise.reject(error)
 );
@@ -26,11 +31,14 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401) {
-      // Clear the token but don't force reload in development
+    const status = error.response?.status;
+    if (status === 401 || status === 403) {
+      // Clear the token and notify the app to log out and redirect
       await AsyncStorage.removeItem("authToken");
-      // Let the app handle the redirect instead of forcing a page reload
-      console.warn("Authentication failed. Token cleared.");
+      AuthEventEmitter.getInstance().emit("authExpired");
+      console.warn(
+        `Authentication failed with status ${status}. Token cleared and logout emitted.`
+      );
     }
     return Promise.reject(error);
   }

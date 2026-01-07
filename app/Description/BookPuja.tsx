@@ -23,12 +23,11 @@ const BookPuja: React.FC<Props> = ({ route }) => {
   const { theme } = useTheme();
   const styles = createStyles(theme);
 
-  const { id, selectedDevotee } = route.params;
-  //const item = rawJson.data.find((d: any) => d?.[Core.id] === id);
-  const temple = selectedDevotee;
-  const puja = selectedDevotee?.["core.pujaDescription"];
+  const { id, selectedPackage, packages } = route.params;
+  const temple = selectedPackage;
+  const puja = selectedPackage?.["core.pujaDescription"];
 
-  console.warn(temple, id, "hahahah");
+  console.warn(packages, "test");
 
   const HeaderContent = () => (
     <View style={styles.headerContainer}>

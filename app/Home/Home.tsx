@@ -4,7 +4,13 @@ import { useEvent } from "@/serviceManager/services/Event/useEvent";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Dimensions,
   FlatList,
@@ -17,7 +23,7 @@ import { ActivityIndicator } from "react-native-paper";
 import { useTheme } from "../../context/ThemeContext";
 import AuthScreen from "../auth/login";
 import { createStyles } from "../styles";
-import { pujaOptions, RootStackParamList } from "../utils/utils";
+import { RootStackParamList } from "../utils/utils";
 import SelectCorePujaType from "./SelectCorePujaType";
 import EmptyState from "./components/EmptyState";
 import HomeHeader from "./components/HomeHeader";
@@ -45,8 +51,10 @@ export default function Home() {
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const _baseURL =
-    process.env.EXPO_PUBLIC_API_BASE_URL || "https://api.jalsuvidha.com/";
+  const _baseURL = useMemo(
+    () => process.env.EXPO_PUBLIC_API_BASE_URL || "https://api.jalsuvidha.com/",
+    []
+  );
 
   /* ---------- First Launch Check ---------- */
   useEffect(() => {
@@ -69,9 +77,13 @@ export default function Home() {
     if (!isLoggedIn) return;
 
     setLoading(true);
-    const res = await fetchEvents({ page: 1, limit: 10000 });
-    setEvents(res || []);
-    setLoading(false);
+    try {
+      const res = await fetchEvents({ page: 1, limit: 10000 });
+      console.log(res);
+      setEvents(res || []);
+    } finally {
+      setLoading(false);
+    }
   }, [isLoggedIn, fetchEvents]);
 
   useEffect(() => {
@@ -98,11 +110,12 @@ export default function Home() {
   useEffect(() => {
     navigation.setOptions({
       headerShown: isLoggedIn,
-      title: pujaOptions?.find((p) => p.type === corePujaType)?.title,
+      title: "Home",
       gestureEnabled: false,
     });
   }, [navigation, isLoggedIn, corePujaType]);
 
+  // Memoize the renderItem with all dependencies
   const renderItem = useCallback(
     ({ item }: { item: EventProps }) => (
       <PujaCard
@@ -111,10 +124,49 @@ export default function Home() {
         theme={theme}
         _baseURL={_baseURL}
         numColumns={numColumns}
-        onBooking={() => navigation.navigate("Description", { id: item._id })}
       />
     ),
-    [styles, theme, navigation, _baseURL]
+    [styles, theme, _baseURL]
+  );
+
+  // Memoize keyExtractor
+  const keyExtractor = useCallback((item: EventProps) => item.eventName, []);
+
+  // Memoize ListHeaderComponent
+  const ListHeaderComponent = useMemo(
+    () => (
+      <HomeHeader
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        styles={styles}
+        theme={theme}
+      />
+    ),
+    [searchQuery, styles, theme]
+  );
+
+  // Memoize ListEmptyComponent
+  const ListEmptyComponent = useMemo(
+    () => (searchQuery ? <EmptyState styles={styles} /> : null),
+    [searchQuery, styles]
+  );
+
+  // Memoize RefreshControl
+  const refreshControl = useMemo(
+    () => (
+      <RefreshControl
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+        tintColor={theme.accent}
+      />
+    ),
+    [refreshing, onRefresh, theme.accent]
+  );
+
+  // Memoize columnWrapperStyle
+  const columnWrapperStyle = useMemo(
+    () => (numColumns > 1 ? styles.row : undefined),
+    [styles.row]
   );
 
   if (isFirstLaunch === null || !isLoaded || loading) {
@@ -125,6 +177,7 @@ export default function Home() {
     );
   }
 
+  console.log(isSignedIn, "d");
   if (!isSignedIn) return <AuthScreen />;
 
   if (!corePujaType) return <SelectCorePujaType onSelection={() => {}} />;
@@ -137,29 +190,23 @@ export default function Home() {
         ref={flatListRef}
         data={filteredData}
         renderItem={renderItem}
-        keyExtractor={(item) => item._id}
+        keyExtractor={keyExtractor}
         numColumns={numColumns}
-        ListHeaderComponent={
-          <HomeHeader
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            styles={styles}
-            theme={theme}
-          />
-        }
-        ListEmptyComponent={searchQuery ? <EmptyState styles={styles} /> : null}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={theme.accent}
-          />
-        }
-        columnWrapperStyle={numColumns > 1 ? styles.row : undefined}
-        removeClippedSubviews
+        ListHeaderComponent={ListHeaderComponent}
+        ListEmptyComponent={ListEmptyComponent}
+        refreshControl={refreshControl}
+        columnWrapperStyle={columnWrapperStyle}
+        removeClippedSubviews={Platform.OS === "android"}
+        maxToRenderPerBatch={10}
+        updateCellsBatchingPeriod={50}
         initialNumToRender={10}
         windowSize={10}
         showsVerticalScrollIndicator={false}
+        getItemLayout={(data, index) => ({
+          length: 400, // Approximate height of each card
+          offset: 400 * index,
+          index,
+        })}
       />
     </View>
   );

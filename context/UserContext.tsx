@@ -1,6 +1,7 @@
 // AuthContext.tsx
 import { ICorePujaType } from "@/app/utils/utils";
 import ServiceManager from "@/serviceManager/ServiceManager";
+import AuthEventEmitter from "@/serviceManager/services/AuthEvents";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, {
   createContext,
@@ -28,7 +29,7 @@ type AuthContextType = {
   isLoaded: boolean;
   selectedThemeIndex: number;
   setThemeIndex: (index: number) => void;
-  corePujaType: string;
+  corePujaType: ICorePujaType | undefined;
   setCorePujaType: Dispatch<SetStateAction<ICorePujaType | undefined>>;
   checkAuthStatus: () => Promise<boolean>;
 };
@@ -88,7 +89,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loadUserData();
   }, [loadUserData]);
 
-  const login = async (userData: User) => {
+  const login = useCallback(async (userData: User) => {
     try {
       await AsyncStorage.setItem(
         STORAGE_KEYS.USER_DATA,
@@ -99,25 +100,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Error saving user data:", error);
       throw error;
     }
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       // Call server logout to clear cookies
       await service.logout();
-      // Clear local storage
-      await AsyncStorage.removeItem(STORAGE_KEYS.USER_DATA);
-      setUser(null);
-      setIsAuthenticated(false);
     } catch (error) {
-      console.error("Error during logout:", error);
-      // Even if server logout fails, clear local data
+      console.error("Error during logout (server):", error);
+      // proceed to clear local regardless
+    } finally {
+      // Clear local storage and auth state
       await AsyncStorage.removeItem(STORAGE_KEYS.USER_DATA);
       setUser(null);
       setIsAuthenticated(false);
-      throw error;
     }
-  };
+  }, [service]);
+
+  // Listen for auth expiration events (emitted by interceptor)
+  useEffect(() => {
+    const handleAuthExpired = async () => {
+      console.warn("Received authExpired event, performing logout");
+      try {
+        await logout();
+      } catch (e) {
+        console.error("Error during logout after auth expired:", e);
+      }
+    };
+
+    const emitter = AuthEventEmitter.getInstance();
+    emitter.on("authExpired", handleAuthExpired);
+    return () => {
+      emitter.off("authExpired", handleAuthExpired);
+    };
+  }, [logout]);
 
   const checkAuthStatus = async (): Promise<boolean> => {
     try {
@@ -142,7 +158,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isLoaded,
         selectedThemeIndex,
         setThemeIndex,
-        corePujaType: corePujaType?.toString() || "",
+        corePujaType,
         setCorePujaType,
         checkAuthStatus,
       }}

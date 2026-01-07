@@ -7,8 +7,9 @@ export const EventAPI = {
     limit?: number;
   }): Promise<EventProps[]> => {
     const result = await apiClient.get(
-      `api/event/get?page${props.page}&limit${props.limit}`
+      `api/event/get?page=${props.page}&limit=${props.limit}`
     );
+    console.log(result, "resuult");
     if (!result) throw Error("Some issue");
     // Normalize response shape: API may return { data: { data: [...] } } or just an array
     const payload = (result as any)?.data;

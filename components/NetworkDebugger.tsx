@@ -7,6 +7,7 @@ import {
   View,
 } from "react-native";
 import ServiceManager from "../serviceManager/ServiceManager";
+import AuthEventEmitter from "../serviceManager/services/AuthEvents";
 
 export default function NetworkDebugger() {
   const [logs, setLogs] = useState<string[]>([]);
@@ -75,6 +76,11 @@ export default function NetworkDebugger() {
     setIsLoading(false);
   };
 
+  const simulateAuthExpired = () => {
+    addLog("⚠️ Simulating auth expired (emitting authExpired)");
+    AuthEventEmitter.getInstance().emit("authExpired");
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Network Debugger</Text>
@@ -109,6 +115,13 @@ export default function NetworkDebugger() {
           onPress={clearLogs}
         >
           <Text style={styles.buttonText}>Clear Logs</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: '#FF9500' }]}
+          onPress={simulateAuthExpired}
+        >
+          <Text style={styles.buttonText}>Simulate 403 (Logout)</Text>
         </TouchableOpacity>
       </View>
 

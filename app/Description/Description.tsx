@@ -13,6 +13,7 @@ import { Dimensions, Platform, ScrollView, View } from "react-native";
 import { Button, Divider, Snackbar, Text } from "react-native-paper";
 import { useTheme } from "../../context/ThemeContext";
 
+import { usePackage } from "@/serviceManager/services/Package/usePackage";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { RootStackParamList } from "../utils/utils";
@@ -44,11 +45,8 @@ type Props = {
 export const Description: React.FC<Props> = ({ route, navigation }) => {
   const router = useRouter();
 
-  const { id: idParam } = route.params;
-  const [selectedDevoteeType, setSelectedDevoteeType] = useState<Record<
-    string,
-    any
-  > | null>(null);
+  const { id: idParam, packages } = route.params;
+
   const [showModel, setShowModel] = useState<boolean>(false);
   const [showPrasadamModel, setShowPrasadamModel] = useState<boolean>(false);
   const [isFormCompleted, setIsFormCompleted] = useState<boolean>(false);
@@ -57,32 +55,33 @@ export const Description: React.FC<Props> = ({ route, navigation }) => {
   const { isLoggedIn } = useAuth();
   const [item, setItem] = useState<TempleMetadata | null>(null);
   const service = ServiceManager.getInstance();
-  const [packageData, setPackageData] = useState<any>(null);
   const insets = useSafeAreaInsets();
 
+  console.log(packages);
   const { theme } = useTheme();
   const styles = createStyles({ theme, maxWidth, platform: Platform });
   const _baseURL =
     process.env.EXPO_PUBLIC_API_BASE_URL || "https://api.jalsuvidha.com/";
+
+  const { fetchPackageByIDs } = usePackage({ autoFetch: false });
+
+  const pckg = packages ? JSON.parse(packages) : [];
+  const [selectedPackage, setSelectedPackage] = useState<Record<string, any>>(
+    pckg[0]?._id
+  );
+
   useEffect(() => {
     service.fetchTempleData(idParam as string).then((data) => {
-      console.log(data, "fetched data....");
       setItem(data);
     });
-
-    service.getPcakagesOfTemple(idParam as string).then((data) => {
-      setPackageData(data);
-      console.warn(data, "...packages");
-    });
-  }, [idParam, service]);
+  }, [idParam, service, fetchPackageByIDs]);
 
   const transformedPlans = useMemo(() => {
-    const packages = packageData;
-    if (!packages || !Array.isArray(packages)) {
+    if (!packages || !Array.isArray(JSON.parse(packages))) {
       return [];
     }
-    return packages;
-  }, [packageData]);
+    return JSON.parse(packages)?.map((x) => ({ ...x, id: x._id }));
+  }, [packages]);
 
   useEffect(() => {
     if (navigation && typeof navigation.setOptions === "function") {
@@ -90,17 +89,16 @@ export const Description: React.FC<Props> = ({ route, navigation }) => {
     }
   }, [navigation]);
 
-  console.warn(selectedDevoteeType);
   const bookPuja = useCallback(
     (item: TempleMetadata) => {
       VibrationManager.selection();
       router.push(
         `/Description/BookPuja?id=${
           item?.[Core.id]
-        }&selectedDevotee=${selectedDevoteeType}`
+        }&selectedPackage=${selectedPackage}`
       );
     },
-    [selectedDevoteeType, router]
+    [selectedPackage, router]
   );
 
   if (!item) {
@@ -138,17 +136,17 @@ export const Description: React.FC<Props> = ({ route, navigation }) => {
             </Text>
             <ExpandablePlanSelector
               plans={transformedPlans}
-              selectedPlan={selectedDevoteeType?.id}
+              selectedPlan={selectedPackage?._id}
               onPlanSelect={(plan) => {
+                console.log(plan, "ppllaann");
                 setIsFormCompleted(true);
-                setSelectedDevoteeType(plan);
+
+                setSelectedPackage(plan);
                 VibrationManager.selection();
               }}
             />
           </View>
-
           <PanditCard item={item} styles={styles} />
-
           {item?.prasadDelivery?.included && (
             <PrasadDelivery
               prasadDelivery={item.prasadDelivery}
@@ -174,7 +172,8 @@ export const Description: React.FC<Props> = ({ route, navigation }) => {
               VibrationManager.selection();
               navigation.navigate("bookingPage", {
                 id: item?.[Core.id],
-                selectedDevotee: selectedDevoteeType,
+                selectedPackage: selectedPackage,
+                packages,
               });
             }
 
